@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup - [Business Name]</title>
+  <script>
+    const id = new URLSearchParams(window.location.search).get('id');
+    const first = new URLSearchParams(window.location.search).get('first');
+    
+    if (first) {
+      // First visit - setup
+      localStorage.setItem(`business_${id}`, 'setup');
+      
+      // Show setup form
+      document.write(`
+        <h2>Setup ${document.title}</h2>
+        <input placeholder="Business Name" id="name">
+        <button onclick="save()">Save & Go to Reviews</button>
+        <script>
+          function save() {
+            const name = document.getElementById('name').value;
+            localStorage.setItem('businessName', name);
+            window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(name) + '+reviews';
+          }
+        <\/script>
+      `);
+    } else {
+      // Returning visit - direct to reviews
+      const businessName = localStorage.getItem('businessName') || '';
+      if (businessName) {
+        window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(businessName) + '+reviews';
+      } else {
+        // Fallback
+        window.location.href = 'https://www.google.com/search?q=reviews';
+      }
+    }
+  <\/script>
+</head>
+<body>
+</body>
+</html>

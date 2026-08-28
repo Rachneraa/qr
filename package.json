@@ -1,0 +1,19 @@
+{
+  "name": "qr-review-business",
+  "version": "1.0.0",
+  "description": "Smart NFC / QR Google Review System with Claim-on-First-Tap & Edge Redirect",
+  "type": "module",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "kv:create": "wrangler kv:namespace create REVIEW_TAGS",
+    "kv:create:preview": "wrangler kv:namespace create REVIEW_TAGS --preview"
+  },
+  "keywords": ["nfc", "qr-code", "google-review", "cloudflare-workers", "edge-redirect"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.109.0"
+  }
+}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch QR & NFC Stand Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --google-yellow: #fbbc04;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: #f8fafc; color: #334155; padding: 30px 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header-card { background: #fff; padding: 28px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+    p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+    .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13.5px; outline: none; }
+    .form-group input:focus { border-color: var(--primary); }
+    .btn-bar { display: flex; gap: 12px; }
+    .btn { padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-secondary { background: #e2e8f0; color: var(--dark); }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; }
+    .stand-header { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+    .stand-stars { color: var(--google-yellow); font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
+    .qr-frame { background: #fff; display: inline-flex; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+    .tag-badge { display: inline-block; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #475569; font-family: monospace; margin-bottom: 6px; }
+    .nfc-hint { font-size: 11px; font-weight: 600; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .header-card, .btn-bar { display: none !important; }
+      .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+      .stand-card { border: 1px dashed #94a3b8; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-card">
+      <h1>🖨️ Batch QR Code & NFC Generator</h1>
+      <p class="subtitle">Generate Tag ID unik dan QR Code siap cetak untuk kartu/stand akrilik Google Review Anda.</p>
+      <div class="controls-grid">
+        <div class="form-group">
+          <label>Mode Cetak</label>
+          <select id="modeSelect" onchange="toggleMode()">
+            <option value="single">🎯 1 QR Sama (Cetak Banyak untuk Meja/Cabang yang Sama)</option>
+            <option value="batch">🔢 ID Berurutan (Tiap Stiker Beda ID untuk Klien Berbeda)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Domain / URL Worker Anda</label>
+          <input type="text" id="domainInput" value="" placeholder="https://domain-anda.com" />
+        </div>
+        <div class="form-group" id="tagIdGroup">
+          <label>ID Kartu / QR</label>
+          <input type="text" id="singleTagId" value="REV-TOKO-01" placeholder="REV-TOKO-01" />
+        </div>
+        <div class="form-group" id="prefixGroup" style="display: none;">
+          <label>Prefix ID Kartu</label>
+          <input type="text" id="prefixInput" value="REV" placeholder="REV / CARD / STAND" />
+        </div>
+        <div class="form-group" id="startNumGroup" style="display: none;">
+          <label>Nomor Mulai</label>
+          <input type="number" id="startNum" value="101" min="1" />
+        </div>
+        <div class="form-group">
+          <label>Jumlah Stiker Dicetak</label>
+          <input type="number" id="qtyInput" value="10" min="1" max="100" />
+        </div>
+      </div>
+      <div class="btn-bar">
+        <button class="btn btn-primary" onclick="generateBatch()">⚡ Generate QR Codes</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak / Print Lembar (A4)</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="cardsContainer"></div>
+  </div>
+  <script>
+    function toggleMode() {
+      const mode = document.getElementById('modeSelect').value;
+      const isSingle = mode === 'single';
+      document.getElementById('tagIdGroup').style.display = isSingle ? 'block' : 'none';
+      document.getElementById('prefixGroup').style.display = isSingle ? 'none' : 'block';
+      document.getElementById('startNumGroup').style.display = isSingle ? 'none' : 'block';
+    }
+
+    function generateBatch() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+      let domain = document.getElementById('domainInput').value.trim() || window.location.origin;
+      if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+        domain = 'https://' + domain;
+      }
+      domain = domain.replace(/\/+$/, '');
+
+      const mode = document.getElementById('modeSelect').value;
+      const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+
+      for (let i = 0; i < qty; i++) {
+        let tagId = '';
+        if (mode === 'single') {
+          tagId = document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01';
+        } else {
+          const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
+          const start = parseInt(document.getElementById('startNum').value, 10) || 1;
+          tagId = prefix + '-' + (start + i);
+        }
+
+        const targetUrl = domain + '/t/' + tagId;
+        const card = document.createElement('div');
+        card.className = 'stand-card';
+        card.innerHTML = '<div class="stand-header">Ulas Kami di Google</div>' +
+          '<div class="stand-stars">★★★★★</div>' +
+          '<div class="qr-frame" id="qr-' + tagId + '-' + i + '"></div>' +
+          '<div><div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(Stiker #' + (i + 1) + ')' : '') + '</div>' +
+          '<div class="nfc-hint">📲 Tap NFC atau Scan QR</div></div>';
+        container.appendChild(card);
+
+        new QRCode(document.getElementById('qr-' + tagId + '-' + i), {
+          text: targetUrl,
+          width: 140,
+          height: 140,
+          colorDark: '#0f172a',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('domainInput').value = window.location.origin;
+      generateBatch();
+    });
+  </script>
+</body>
+</html>
