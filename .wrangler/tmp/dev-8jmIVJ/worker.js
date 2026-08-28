@@ -160,64 +160,87 @@ var SETUP_HTML = `<!DOCTYPE html>
     .btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+    .success-view { display: none; text-align: center; }
+    .success-view.active { display: block; }
+    .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
+    .btn-test-now { display: block; width: 100%; background: var(--primary); color: #fff; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 15px; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="badge-tag">
-        <span class="dot"></span>
-        ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
+  <div class="container" id="mainContainer">
+    <div id="setupView">
+      <div class="header">
+        <div class="badge-tag">
+          <span class="dot"></span>
+          ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
+        </div>
+        <div class="google-stars">\u2605\u2605\u2605\u2605\u2605</div>
+        <h1>Aktivasi Stand Google Review</h1>
+        <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
       </div>
-      <div class="google-stars">\u2605\u2605\u2605\u2605\u2605</div>
-      <h1>Aktivasi Stand Google Review</h1>
-      <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
+
+      <div id="alertBanner" class="alert-banner"></div>
+
+      <div class="setup-form">
+        <div class="form-group">
+          <label for="businessName">1. Nama Toko / Bisnis</label>
+          <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
+          <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
+        </div>
+
+        <div class="helper-box">
+          <b>\u{1F4A1} 2 Cara Cepat Mendapatkan Place ID Toko:</b>
+          <div style="margin-top: 6px;">
+            1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
+            2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
+          </div>
+          <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
+            \u{1F50D} Buka Pencari Place ID Google (Gratis)
+          </a>
+        </div>
+
+        <div class="preview-box" id="previewBox">
+          <span class="preview-badge">\u2713 Target Direct 5-Star Review Siap</span>
+          <div class="preview-url" id="previewUrlText"></div>
+          <a href="#" target="_blank" class="btn-test" id="btnTestLink">
+            \u{1F440} Uji Coba Buka Pop-up Bintang 5 di Tab Baru
+          </a>
+        </div>
+
+        <button type="button" class="btn-submit" id="btnSubmit" onclick="handleSave()">
+          \u{1F512} Simpan & Kunci Kartu Ini
+        </button>
+
+        <div class="warning-lock">
+          <span>\u26A0\uFE0F</span> Kartu ini akan terkunci permanen untuk toko Anda setelah disimpan.
+        </div>
+      </div>
     </div>
 
-    <div id="alertBanner" class="alert-banner"></div>
-
-    <form id="setupForm" onsubmit="handleSave(event)">
-      <div class="form-group">
-        <label for="businessName">1. Nama Toko / Bisnis</label>
-        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
-      </div>
-
-      <div class="form-group">
-        <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
-        <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
-      </div>
-
-      <div class="helper-box">
-        <b>\u{1F4A1} 2 Cara Cepat Mendapatkan Place ID Toko:</b>
-        <div style="margin-top: 6px;">
-          1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
-          2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
-        </div>
-        <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
-          \u{1F50D} Buka Pencari Place ID Google (Gratis)
-        </a>
-      </div>
-
-      <div class="preview-box" id="previewBox">
-        <span class="preview-badge">\u2713 Target Direct 5-Star Review Siap</span>
-        <div class="preview-url" id="previewUrlText"></div>
-        <a href="#" target="_blank" class="btn-test" id="btnTestLink">
-          \u{1F440} Uji Coba Buka Pop-up Bintang 5 di Tab Baru
-        </a>
-      </div>
-
-      <button type="submit" class="btn-submit" id="btnSubmit">
-        \u{1F512} Simpan & Kunci Kartu Ini
-      </button>
-
-      <div class="warning-lock">
-        <span>\u26A0\uFE0F</span> Kartu ini akan terkunci permanen untuk toko Anda setelah disimpan.
-      </div>
-    </form>
+    <div id="successView" class="success-view">
+      <div class="success-icon">\u2713</div>
+      <h1 style="color: #15803d; margin-bottom: 8px;">Kartu Berhasil Diaktifkan!</h1>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+        Stand review untuk <b id="successBusinessName" style="color: #0f172a;"></b> telah resmi terkunci & siap digunakan.
+      </p>
+      <a href="#" id="successReviewBtn" target="_blank" class="btn-test-now">
+        \u{1F680} Buka Form Bintang 5 Sekarang
+      </a>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 14px;">
+        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review di atas.
+      </p>
+    </div>
   </div>
 
   <script>
     const TAG_ID = "{{TAG_ID}}";
+    const setupView = document.getElementById('setupView');
+    const successView = document.getElementById('successView');
     const nameInput = document.getElementById('businessName');
     const inputField = document.getElementById('placeIdInput');
     const previewBox = document.getElementById('previewBox');
@@ -259,7 +282,6 @@ var SETUP_HTML = `<!DOCTYPE html>
     function showAlert(msg) {
       alertBanner.textContent = msg;
       alertBanner.className = 'alert-banner error';
-      alertBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function clearAlert() {
@@ -267,8 +289,7 @@ var SETUP_HTML = `<!DOCTYPE html>
       alertBanner.className = 'alert-banner';
     }
 
-    async function handleSave(e) {
-      if (e) e.preventDefault();
+    async function handleSave() {
       clearAlert();
 
       const name = nameInput.value.trim();
@@ -305,7 +326,10 @@ var SETUP_HTML = `<!DOCTYPE html>
         const data = await res.json();
 
         if (res.ok && data.success) {
-          window.location.href = '/t/' + TAG_ID + '?activated=true';
+          setupView.style.display = 'none';
+          document.getElementById('successBusinessName').textContent = name;
+          document.getElementById('successReviewBtn').href = data.targetUrl || finalDirectUrl;
+          successView.classList.add('active');
         } else {
           showAlert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
           btnSubmit.disabled = false;
@@ -318,64 +342,6 @@ var SETUP_HTML = `<!DOCTYPE html>
       }
     }
   <\/script>
-</body>
-</html>`;
-var SUCCESS_HTML = `<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Kartu Berhasil Diaktifkan!</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #1a73e8;
-      --google-green: #34a853;
-      --dark: #1e293b;
-      --text-muted: #64748b;
-      --radius: 18px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f0fdf4 100%); color: #334155; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; text-align: center; }
-    .container { width: 100%; max-width: 440px; background: #fff; border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(22, 101, 52, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 36px 24px; }
-    .success-icon { width: 72px; height: 72px; background: #dcfce7; color: var(--google-green); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-    h1 { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
-    p.desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
-    .info-card { background: #f8fafc; border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 24px; border: 1px solid #e2e8f0; }
-    .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-    .info-row:last-child { margin-bottom: 0; }
-    .info-label { color: var(--text-muted); }
-    .info-value { font-weight: 700; color: var(--dark); max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-test-now { display: block; width: 100%; padding: 15px; background: var(--primary); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
-    .notice { margin-top: 18px; font-size: 12px; color: #94a3b8; line-height: 1.4; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="success-icon">\u2713</div>
-    <h1>Kartu Berhasil Diaktifkan!</h1>
-    <p class="desc">Kartu NFC & QR Review ini sekarang <b>terkunci permanen</b> untuk bisnis Anda.</p>
-    <div class="info-card">
-      <div class="info-row">
-        <span class="info-label">Nama Bisnis:</span>
-        <span class="info-value">{{BUSINESS_NAME}}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">ID Kartu:</span>
-        <span class="info-value">{{TAG_ID}}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Status:</span>
-        <span class="info-value" style="color: #16a34a;">\u25CF Aktif & Terkunci</span>
-      </div>
-    </div>
-    <a href="{{TARGET_URL}}" class="btn-test-now">\u{1F680} Buka Halaman Review Sekarang</a>
-    <p class="notice">Mulai sekarang, setiap scan atau tap NFC oleh pelanggan akan langsung membuka halaman Google Review toko Anda.</p>
-  </div>
 </body>
 </html>`;
 var GENERATOR_HTML = `<!DOCTYPE html>
@@ -578,12 +544,15 @@ var worker_default = {
           console.error("KV Read Error:", e);
         }
       }
-      const isJustActivated = url.searchParams.get("activated") === "true";
-      if (isJustActivated && tagData && tagData.isLocked) {
-        const html = SUCCESS_HTML.replace(/{{TAG_ID}}/g, tagId).replace(/{{BUSINESS_NAME}}/g, tagData.businessName || "Bisnis Anda").replace(/{{TARGET_URL}}/g, tagData.targetUrl);
-        return new Response(html, {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
-        });
+      if (!tagData) {
+        const cookieHeader = request.headers.get("Cookie") || "";
+        const cookieMatch = cookieHeader.match(new RegExp(`tag_${tagId}=([^;]+)`));
+        if (cookieMatch) {
+          try {
+            tagData = JSON.parse(decodeURIComponent(cookieMatch[1]));
+          } catch (e) {
+          }
+        }
       }
       if (tagData && tagData.isLocked && tagData.targetUrl) {
         if (ctx && ctx.waitUntil && env.REVIEW_TAGS) {
@@ -622,6 +591,16 @@ var worker_default = {
         if (!parsedUrl.valid) {
           return Response.json({ success: false, error: parsedUrl.error }, { status: 400 });
         }
+        const tagRecord = {
+          tagId,
+          businessName,
+          targetUrl: parsedUrl.url,
+          rawInput: reviewUrl,
+          urlType: parsedUrl.type,
+          isLocked: true,
+          claimedAt: (/* @__PURE__ */ new Date()).toISOString(),
+          totalTaps: 0
+        };
         if (env.REVIEW_TAGS) {
           const existing = await env.REVIEW_TAGS.get(tagId, { type: "json" });
           if (existing && existing.isLocked) {
@@ -630,23 +609,18 @@ var worker_default = {
               error: "Kartu ini sudah pernah diaktifkan dan dikunci permanen."
             }, { status: 409 });
           }
-          const tagRecord = {
-            tagId,
-            businessName,
-            targetUrl: parsedUrl.url,
-            rawInput: reviewUrl,
-            urlType: parsedUrl.type,
-            isLocked: true,
-            claimedAt: (/* @__PURE__ */ new Date()).toISOString(),
-            totalTaps: 0
-          };
           await env.REVIEW_TAGS.put(tagId, JSON.stringify(tagRecord));
         }
-        return Response.json({
+        const responseObj = {
           success: true,
           tagId,
+          businessName,
           targetUrl: parsedUrl.url
-        });
+        };
+        const cookieVal = encodeURIComponent(JSON.stringify(tagRecord));
+        const res = Response.json(responseObj);
+        res.headers.set("Set-Cookie", `tag_${tagId}=${cookieVal}; Path=/; Max-Age=315360000; SameSite=Lax`);
+        return res;
       } catch (err) {
         return Response.json({ success: false, error: err.message }, { status: 500 });
       }

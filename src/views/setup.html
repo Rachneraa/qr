@@ -58,64 +58,88 @@
     .btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+    /* Success State */
+    .success-view { display: none; text-align: center; }
+    .success-view.active { display: block; }
+    .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
+    .btn-test-now { display: block; width: 100%; background: var(--primary); color: #fff; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 15px; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="badge-tag">
-        <span class="dot"></span>
-        ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
+  <div class="container" id="mainContainer">
+    <div id="setupView">
+      <div class="header">
+        <div class="badge-tag">
+          <span class="dot"></span>
+          ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
+        </div>
+        <div class="google-stars">★★★★★</div>
+        <h1>Aktivasi Stand Google Review</h1>
+        <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
       </div>
-      <div class="google-stars">★★★★★</div>
-      <h1>Aktivasi Stand Google Review</h1>
-      <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
+
+      <div id="alertBanner" class="alert-banner"></div>
+
+      <div class="setup-form">
+        <div class="form-group">
+          <label for="businessName">1. Nama Toko / Bisnis</label>
+          <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
+          <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
+        </div>
+
+        <div class="helper-box">
+          <b>💡 2 Cara Cepat Mendapatkan Place ID Toko:</b>
+          <div style="margin-top: 6px;">
+            1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
+            2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
+          </div>
+          <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
+            🔍 Buka Pencari Place ID Google (Gratis)
+          </a>
+        </div>
+
+        <div class="preview-box" id="previewBox">
+          <span class="preview-badge">✓ Target Direct 5-Star Review Siap</span>
+          <div class="preview-url" id="previewUrlText"></div>
+          <a href="#" target="_blank" class="btn-test" id="btnTestLink">
+            👀 Uji Coba Buka Pop-up Bintang 5 di Tab Baru
+          </a>
+        </div>
+
+        <button type="button" class="btn-submit" id="btnSubmit" onclick="handleSave()">
+          🔒 Simpan & Kunci Kartu Ini
+        </button>
+
+        <div class="warning-lock">
+          <span>⚠️</span> Kartu ini akan terkunci permanen untuk toko Anda setelah disimpan.
+        </div>
+      </div>
     </div>
 
-    <div id="alertBanner" class="alert-banner"></div>
-
-    <form id="setupForm" onsubmit="handleSave(event)">
-      <div class="form-group">
-        <label for="businessName">1. Nama Toko / Bisnis</label>
-        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
-      </div>
-
-      <div class="form-group">
-        <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
-        <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
-      </div>
-
-      <div class="helper-box">
-        <b>💡 2 Cara Cepat Mendapatkan Place ID Toko:</b>
-        <div style="margin-top: 6px;">
-          1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
-          2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
-        </div>
-        <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
-          🔍 Buka Pencari Place ID Google (Gratis)
-        </a>
-      </div>
-
-      <div class="preview-box" id="previewBox">
-        <span class="preview-badge">✓ Target Direct 5-Star Review Siap</span>
-        <div class="preview-url" id="previewUrlText"></div>
-        <a href="#" target="_blank" class="btn-test" id="btnTestLink">
-          👀 Uji Coba Buka Pop-up Bintang 5 di Tab Baru
-        </a>
-      </div>
-
-      <button type="submit" class="btn-submit" id="btnSubmit">
-        🔒 Simpan & Kunci Kartu Ini
-      </button>
-
-      <div class="warning-lock">
-        <span>⚠️</span> Kartu ini akan terkunci permanen untuk toko Anda setelah disimpan.
-      </div>
-    </form>
+    <div id="successView" class="success-view">
+      <div class="success-icon">✓</div>
+      <h1 style="color: #15803d; margin-bottom: 8px;">Kartu Berhasil Diaktifkan!</h1>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+        Stand review untuk <b id="successBusinessName" style="color: #0f172a;"></b> telah resmi terkunci & siap digunakan.
+      </p>
+      <a href="#" id="successReviewBtn" target="_blank" class="btn-test-now">
+        🚀 Buka Form Bintang 5 Sekarang
+      </a>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 14px;">
+        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review di atas.
+      </p>
+    </div>
   </div>
 
   <script>
     const TAG_ID = "{{TAG_ID}}";
+    const setupView = document.getElementById('setupView');
+    const successView = document.getElementById('successView');
     const nameInput = document.getElementById('businessName');
     const inputField = document.getElementById('placeIdInput');
     const previewBox = document.getElementById('previewBox');
@@ -156,7 +180,6 @@
     function showAlert(msg) {
       alertBanner.textContent = msg;
       alertBanner.className = 'alert-banner error';
-      alertBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function clearAlert() {
@@ -164,8 +187,7 @@
       alertBanner.className = 'alert-banner';
     }
 
-    async function handleSave(e) {
-      if (e) e.preventDefault();
+    async function handleSave() {
       clearAlert();
 
       const name = nameInput.value.trim();
@@ -202,7 +224,11 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          window.location.href = '/t/' + TAG_ID + '?activated=true';
+          // Render success card immediately
+          setupView.style.display = 'none';
+          document.getElementById('successBusinessName').textContent = name;
+          document.getElementById('successReviewBtn').href = data.targetUrl || finalDirectUrl;
+          successView.classList.add('active');
         } else {
           showAlert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
           btnSubmit.disabled = false;
