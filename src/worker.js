@@ -241,6 +241,8 @@ const SETUP_HTML = `<!DOCTYPE html>
         btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
       }
     }
+
+    btnSubmit.addEventListener('click', handleSave);
   </script>
 </body>
 </html>`;
@@ -552,7 +554,10 @@ export default {
       // If NOT yet configured -> Render First-Tap Setup Page
       const setupHtml = SETUP_HTML.replace(/{{TAG_ID}}/g, tagId);
       return new Response(setupHtml, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+        }
       });
     }
 

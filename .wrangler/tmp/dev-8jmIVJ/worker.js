@@ -341,6 +341,8 @@ var SETUP_HTML = `<!DOCTYPE html>
         btnSubmit.textContent = '\u{1F512} Simpan & Kunci Kartu Ini';
       }
     }
+
+    btnSubmit.addEventListener('click', handleSave);
   <\/script>
 </body>
 </html>`;
@@ -572,7 +574,10 @@ var worker_default = {
       }
       const setupHtml = SETUP_HTML.replace(/{{TAG_ID}}/g, tagId);
       return new Response(setupHtml, {
-        headers: { "Content-Type": "text/html; charset=utf-8" }
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
       });
     }
     if (path === "/api/claim" && request.method === "POST") {
