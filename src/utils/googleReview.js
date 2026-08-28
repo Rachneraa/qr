@@ -1,9 +1,7 @@
 /**
  * Google Review Link Helper & Parser
- * Menjamin 0% error 404:
- * 1. Jika link Google Maps (maps.app.goo.gl/...), diarahkan langsung ke Google Maps resmi (langsung buka app Maps di HP pelanggan).
- * 2. Jika Place ID (ChIJ...), diarahkan ke form review popup bintang 5.
- * 3. Jika g.page, diarahkan ke link ulasan resmi Google Bisnis.
+ * Otomatis membersihkan input (jika ada alamat yang ikut tersalin)
+ * dan mengambil kode Place ID murni (ChIJ...).
  */
 
 export function sanitizeTagId(rawId) {
@@ -18,7 +16,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
 
   const trimmed = input.trim();
 
-  // 1. Jika Place ID resmi (ChIJ...)
+  // 1. Ekstrak Place ID murni (ChIJ...) meskipun ada alamat/teks lain yang ikut tersalin
   const placeIdMatch = trimmed.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
   if (placeIdMatch) {
     const cleanPlaceId = placeIdMatch[0];
@@ -29,7 +27,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 2. Jika direct writereview URL
+  // 2. Direct writereview URL
   if (trimmed.includes('search.google.com/local/writereview')) {
     try {
       const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
@@ -43,7 +41,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     }
   }
 
-  // 3. Jika link g.page
+  // 3. g.page review shortlink (Official Google Business review shortcut)
   if (trimmed.includes('g.page/')) {
     const url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
     const reviewUrl = url.endsWith('/review') ? url : `${url.replace(/\/+$/, '')}/review`;
@@ -54,18 +52,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 4. Jika link Google Maps (maps.app.goo.gl, goo.gl/maps, google.com/maps)
-  // Pertahankan link aslinya agar di HP customer langsung membuka aplikasi Google Maps tanpa risiko 404!
-  if (trimmed.includes('maps.app.goo.gl') || trimmed.includes('goo.gl/maps') || trimmed.includes('google.com/maps')) {
-    const url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
-    return {
-      valid: true,
-      url,
-      type: 'maps_direct'
-    };
-  }
-
-  // 5. Fallback URL
+  // 4. Generic HTTPS link
   if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
     return {
       valid: true,
@@ -74,10 +61,9 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // Default: Jika plain text tanpa ChIJ, gunakan Google search ulasan
   return {
     valid: true,
-    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
-    type: 'query_search'
+    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed.split('\n')[0].trim())}`,
+    type: 'inferred_place_id'
   };
 }
