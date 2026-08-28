@@ -307,7 +307,6 @@ const SUCCESS_HTML = `<!DOCTYPE html>
         <span class="info-value" style="color: #16a34a;">● Aktif & Terkunci</span>
       </div>
     </div>
-    <a href="{{TARGET_URL}}" class="btn-test-now">🚀 Buka Halaman Review Sekarang</a>
     <p class="notice">Mulai sekarang, setiap scan atau tap NFC oleh pelanggan akan langsung membuka halaman Google Review toko Anda.</p>
   </div>
 </body>
@@ -323,6 +322,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     :root {
       --primary: #1a73e8;
@@ -334,6 +334,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       --google-green: #34a853;
       --google-blue: #4285f4;
       --success: #16a34a;
+      --figma: #0d99ff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background: #f8fafc; color: #334155; padding: 30px 20px; }
@@ -351,15 +352,17 @@ const GENERATOR_HTML = `<!DOCTYPE html>
     .btn-primary:hover { background: #1557b0; }
     .btn-success { background: #16a34a; color: #fff; }
     .btn-success:hover { background: #15803d; }
+    .btn-figma { background: #0284c7; color: #fff; }
+    .btn-figma:hover { background: #0369a1; }
     .btn-secondary { background: #e2e8f0; color: var(--dark); }
     .btn-secondary:hover { background: #cbd5e1; }
-    .btn-reset { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+    .btn-reset { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
     .btn-reset:hover { background: #fee2e2; }
     
     /* Progress Bar Box */
-    .progress-box { margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px; }
+    .progress-box { margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .progress-info { font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
-    .progress-bar-container { flex: 1; max-width: 320px; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 0 16px; }
+    .progress-bar-container { flex: 1; min-width: 180px; max-width: 320px; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 0 16px; }
     .progress-bar-fill { height: 100%; background: #16a34a; width: 0%; transition: width 0.3s ease; }
 
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
@@ -392,13 +395,16 @@ const GENERATOR_HTML = `<!DOCTYPE html>
     .status-badge.pending { color: #94a3b8; }
     .status-badge.done { color: #16a34a; }
 
+    /* Hidden container for generating high-res export QR codes */
+    #exportOffscreen { position: fixed; left: -9999px; top: -9999px; visibility: hidden; pointer-events: none; }
+
     /* Toast notification */
     #toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; pointer-events: none; }
     #toast.show { opacity: 1; transform: translateY(0); }
 
     @media print {
       body { background: #fff; padding: 0; }
-      .header-card, .btn-bar, .card-actions, #toast, .progress-box { display: none !important; }
+      .header-card, .btn-bar, .card-actions, #toast, .progress-box, #exportOffscreen { display: none !important; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
       .stand-card { border: 1px dashed #94a3b8; box-shadow: none; background: #fff !important; }
       .brand-footer { margin-bottom: 0; }
@@ -408,8 +414,8 @@ const GENERATOR_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="header-card">
-      <h1>🖨️ Generator QR Code & Export Canva</h1>
-      <p class="subtitle">Generate stand akrilik Google Review, copy link untuk NFC, atau export CSV untuk Canva Bulk Create.</p>
+      <h1>🖨️ Generator QR Code & Export Canva / Figma</h1>
+      <p class="subtitle">Generate stand akrilik Google Review, copy link untuk NFC, atau export ZIP untuk Figma & Canva.</p>
       
       <div class="controls-grid">
         <div class="form-group">
@@ -442,9 +448,10 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       </div>
       
       <div class="btn-bar">
-        <button class="btn btn-primary" onclick="generateBatch(true)">⚡ Refresh QR Preview</button>
-        <button class="btn btn-success" onclick="downloadCsvForCanva()">📥 Download CSV untuk Canva</button>
-        <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Lembar A4 Langsung</button>
+        <button class="btn btn-figma" id="btnExportFigma" onclick="exportZipForFigma()">📦 Export ZIP Semua QR (untuk Figma)</button>
+        <button class="btn btn-success" onclick="downloadCsvForCanva()">📥 Download CSV Canva</button>
+        <button class="btn btn-primary" onclick="generateBatch(true)">⚡ Refresh Preview</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Lembar A4</button>
       </div>
 
       <div class="progress-box" id="progressBox">
@@ -462,6 +469,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
     <div class="cards-grid" id="cardsContainer"></div>
   </div>
 
+  <div id="exportOffscreen"></div>
   <div id="toast">Link berhasil disalin!</div>
 
   <script>
@@ -536,7 +544,6 @@ const GENERATOR_HTML = `<!DOCTYPE html>
         showToast('📋 Link ' + tagId + ' disalin! Siap di-write ke NFC.');
         toggleDoneStatus(tagId, true, cardIndex);
       }).catch(() => {
-        // Fallback for older browsers
         const temp = document.createElement('input');
         temp.value = targetUrl;
         document.body.appendChild(temp);
@@ -550,7 +557,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
 
     function toggleDoneStatus(tagId, forceValue, cardIndex) {
       const doneMap = getDoneMap();
-      const current = !!doneMap[tagId];
+      const current = !doneMap[tagId];
       const newVal = forceValue !== undefined ? forceValue : !current;
       doneMap[tagId] = newVal;
       saveDoneMap(doneMap);
@@ -635,7 +642,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
           trackingKey = tagId;
         }
 
-        const isDone = !!doneMap[trackingKey];
+        const isDone = !doneMap[trackingKey];
         const targetUrl = domain + '/t/' + tagId;
         const card = document.createElement('div');
         card.className = 'stand-card ' + (isDone ? 'card-done' : '');
@@ -679,6 +686,95 @@ const GENERATOR_HTML = `<!DOCTYPE html>
 
       updateProgressBar();
       if (showNotice) showToast('QR Code berhasil di-generate!');
+    }
+
+    // Export ZIP of 500x500 pure clean QR PNGs for Figma
+    async function exportZipForFigma() {
+      const btn = document.getElementById('btnExportFigma');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Menyiapkan ZIP...';
+      showToast('📦 Sedang memproses gambar QR HD...');
+
+      try {
+        let domain = document.getElementById('domainInput').value.trim() || window.location.origin;
+        if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+          domain = 'https://' + domain;
+        }
+        domain = domain.replace(/\\/+$/, '');
+
+        const mode = document.getElementById('modeSelect').value;
+        const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+        const zip = new JSZip();
+        const offscreen = document.getElementById('exportOffscreen');
+
+        for (let i = 0; i < qty; i++) {
+          let tagId = '';
+          let fileName = '';
+          if (mode === 'single') {
+            tagId = document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01';
+            fileName = tagId + '_copy_' + (i + 1) + '.png';
+          } else {
+            const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
+            const start = parseInt(document.getElementById('startNum').value, 10) || 1;
+            tagId = prefix + '-' + (start + i);
+            fileName = tagId + '.png';
+          }
+
+          const targetUrl = domain + '/t/' + tagId;
+          offscreen.innerHTML = '';
+          const tempDiv = document.createElement('div');
+          offscreen.appendChild(tempDiv);
+
+          // Generate 500x500 HD QR
+          new QRCode(tempDiv, {
+            text: targetUrl,
+            width: 500,
+            height: 500,
+            colorDark: '#0f172a',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+
+          // Wait a tick for canvas rendering
+          await new Promise(resolve => setTimeout(resolve, 30));
+
+          const canvas = tempDiv.querySelector('canvas');
+          let base64Data = '';
+          if (canvas) {
+            base64Data = canvas.toDataURL('image/png').split(',')[1];
+          } else {
+            const img = tempDiv.querySelector('img');
+            if (img && img.src) {
+              base64Data = img.src.split(',')[1];
+            }
+          }
+
+          if (base64Data) {
+            zip.file(fileName, base64Data, { base64: true });
+          }
+        }
+
+        offscreen.innerHTML = '';
+        btn.innerHTML = '📦 Mengemas ZIP...';
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', \`qr_figma_batch_\${mode}_\${qty}.zip\`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast('🎉 File ZIP berhasil diunduh! Siap drag ke Figma.');
+      } catch (err) {
+        alert('Gagal export ZIP: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
     }
 
     function downloadCsvForCanva() {
@@ -727,7 +823,6 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       }
       toggleMode();
       generateBatch(false);
-    });
   </script>
 </body>
 </html>`;
