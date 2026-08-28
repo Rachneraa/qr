@@ -15,8 +15,8 @@ console.log('✅ Place ID parser passed:', placeIdRes.url);
 
 // 3. Test Maps URL Parser
 const mapsRes = await parseAndNormalizeGoogleReviewUrl('https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic', 'Alun alun cimahi');
-console.assert(mapsRes.valid, 'Maps URL parse failed');
-console.log('✅ Maps URL parser passed (Resolved to direct review popup):', mapsRes.url);
+console.assert(mapsRes.valid && mapsRes.url === 'https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic', 'Maps URL parse failed');
+console.log('✅ Maps URL parser passed (Direct Maps link preserved):', mapsRes.url);
 
 // 4. Test Mock KV Worker Execution
 const mockKVStore = new Map();
@@ -47,8 +47,8 @@ async function testWorkerFlow() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       tagId: 'TEST-100',
-      businessName: 'Kafe Kenangan',
-      reviewUrl: 'ChIJN1t_tDeuEmsRUsoyG83frY4'
+      businessName: 'Alun alun cimahi',
+      reviewUrl: 'https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic'
     })
   });
   const claimRes = await worker.fetch(claimReq, mockEnv);
@@ -56,12 +56,12 @@ async function testWorkerFlow() {
   console.assert(claimData.success === true, 'Claim failed');
   console.log('✅ Card claim & permanent lock succeeded');
 
-  // C. Subsequent visit - should return HTTP 302 Redirect
+  // C. Subsequent visit - should return HTTP 302 Redirect directly to Maps
   const req2 = new Request('https://domain.com/t/TEST-100');
   const res2 = await worker.fetch(req2, mockEnv);
   console.assert(res2.status === 302, `Subsequent visit status expected 302, got ${res2.status}`);
-  console.assert(res2.headers.get('Location') === 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4', 'Redirect location mismatch');
-  console.log('✅ Subsequent visit returned instant HTTP 302 redirect to Google Review:', res2.headers.get('Location'));
+  console.assert(res2.headers.get('Location') === 'https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic', 'Redirect location mismatch');
+  console.log('✅ Subsequent visit returned instant direct HTTP 302 redirect to Maps:', res2.headers.get('Location'));
 
   // D. Attempt re-claim on locked card - should be 409 Conflict
   const reclaimReq = new Request('https://domain.com/api/claim', {

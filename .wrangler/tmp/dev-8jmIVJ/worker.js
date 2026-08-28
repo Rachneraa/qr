@@ -51,10 +51,9 @@ function sanitizeTagId(rawId) {
 __name(sanitizeTagId, "sanitizeTagId");
 async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   if (!input || typeof input !== "string") {
-    return { valid: false, error: "URL atau Place ID tidak boleh kosong" };
+    return { valid: false, error: "URL atau link Google Review tidak boleh kosong" };
   }
   const trimmed = input.trim();
-  const safeName = businessName ? encodeURIComponent(businessName.trim()) : "Review";
   if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
     return {
       valid: true,
@@ -74,77 +73,22 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       return { valid: false, error: "Format URL Google Review tidak valid" };
     }
   }
-  if (trimmed.includes("g.page/") && trimmed.includes("/review")) {
+  if (trimmed.includes("g.page/")) {
+    const url = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+    const reviewUrl = url.endsWith("/review") ? url : `${url.replace(/\/+$/, "")}/review`;
     return {
       valid: true,
-      url: trimmed.startsWith("http") ? trimmed : `https://${trimmed}`,
+      url: reviewUrl,
       type: "gpage_review"
     };
   }
-  if (trimmed.includes("maps.app.goo.gl") || trimmed.includes("goo.gl/maps")) {
-    try {
-      const targetUrl = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
-      const response = await fetch(targetUrl, {
-        method: "GET",
-        redirect: "follow",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-      });
-      const finalUrl = response.url || targetUrl;
-      const parsed = new URL(finalUrl);
-      const ftid = parsed.searchParams.get("ftid");
-      if (ftid) {
-        return {
-          valid: true,
-          url: `https://www.google.com/search?q=${safeName}&lrd=${ftid},3`,
-          type: "ftid_direct_review"
-        };
-      }
-      const placeId = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
-      if (placeId) {
-        return {
-          valid: true,
-          url: `https://search.google.com/local/writereview?placeid=${placeId}`,
-          type: "place_id"
-        };
-      }
-      const query = parsed.searchParams.get("q") || businessName;
-      return {
-        valid: true,
-        url: `https://www.google.com/search?q=${encodeURIComponent(query)}+reviews`,
-        type: "resolved_query_review"
-      };
-    } catch (e) {
-      console.warn("Failed to resolve maps shortlink, using direct search fallback:", e);
-      return {
-        valid: true,
-        url: `https://www.google.com/search?q=${safeName}+reviews`,
-        type: "query_fallback"
-      };
-    }
-  }
-  if (trimmed.includes("google.com/maps")) {
-    try {
-      const parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
-      const ftid = parsed.searchParams.get("ftid");
-      if (ftid) {
-        return {
-          valid: true,
-          url: `https://www.google.com/search?q=${safeName}&lrd=${ftid},3`,
-          type: "ftid_direct_review"
-        };
-      }
-      const placeId = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
-      if (placeId) {
-        return {
-          valid: true,
-          url: `https://search.google.com/local/writereview?placeid=${placeId}`,
-          type: "place_id"
-        };
-      }
-    } catch {
-    }
+  if (trimmed.includes("maps.app.goo.gl") || trimmed.includes("goo.gl/maps") || trimmed.includes("google.com/maps")) {
+    const fullUrl = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+    return {
+      valid: true,
+      url: fullUrl,
+      type: "maps_direct"
+    };
   }
   if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
     return {
@@ -155,8 +99,8 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   }
   return {
     valid: true,
-    url: `https://www.google.com/search?q=${encodeURIComponent(trimmed)}+reviews`,
-    type: "search_query"
+    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
+    type: "maps_search_query"
   };
 }
 __name(parseAndNormalizeGoogleReviewUrl, "parseAndNormalizeGoogleReviewUrl");
