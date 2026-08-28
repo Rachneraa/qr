@@ -14,6 +14,7 @@ export default async function handler(request) {
   const kvRestToken = process?.env?.KV_REST_API_TOKEN || process?.env?.UPSTASH_REDIS_REST_TOKEN;
 
   const env = {
+    ADMIN_PASSWORD: process?.env?.ADMIN_PASSWORD,
     REVIEW_TAGS: {
       get: async (key, opts) => {
         if (kvRestUrl && kvRestToken) {

@@ -312,6 +312,238 @@ const SUCCESS_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+const DEFAULT_ADMIN_PASSWORD = 'codenginewlee';
+
+function getAdminToken(adminPassword) {
+  return btoa(`auth_session_${adminPassword}`);
+}
+
+function isUserAuthenticated(request, env) {
+  const adminPassword = env?.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+  const expectedToken = getAdminToken(adminPassword);
+  const cookieHeader = request.headers.get('Cookie') || '';
+  const match = cookieHeader.match(/admin_auth=([^;]+)/);
+  return match && match[1] === expectedToken;
+}
+
+const LOGIN_HTML = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Admin - QR & NFC Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --dark: #0f172a;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+      color: #334155;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .lock-icon {
+      width: 64px;
+      height: 64px;
+      background: #eff6ff;
+      color: var(--primary);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      border: 1px solid #bfdbfe;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    p.desc {
+      font-size: 13.5px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+      position: relative;
+    }
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 13px 44px 13px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: var(--primary);
+    }
+    .btn-toggle-pw {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #94a3b8;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(26, 115, 232, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-submit:hover {
+      background: #1557b0;
+      transform: translateY(-1px);
+    }
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    .error-msg {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      color: #dc2626;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: none;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card" id="loginCard">
+    <div class="lock-icon">🔒</div>
+    <h1>Akses Generator Admin</h1>
+    <p class="desc">Masukkan kata sandi admin untuk membuka tool cetak QR Code & NFC.</p>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="password">Kata Sandi Admin</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" placeholder="Masukkan password..." required autofocus autocomplete="current-password" />
+          <button type="button" class="btn-toggle-pw" id="togglePwBtn" onclick="togglePasswordVisibility()">👁️</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="submitBtn">🔓 Buka Dashboard</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const input = document.getElementById('password');
+      const btn = document.getElementById('togglePwBtn');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = '🙈';
+      } else {
+        input.type = 'password';
+        btn.innerText = '👁️';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw = document.getElementById('password').value;
+      const btn = document.getElementById('submitBtn');
+      const err = document.getElementById('errorMsg');
+      const card = document.getElementById('loginCard');
+
+      btn.disabled = true;
+      btn.innerText = 'Memverifikasi...';
+      err.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          btn.innerText = '✓ Berhasil Masuk!';
+          window.location.reload();
+        } else {
+          err.innerText = data.error || 'Password salah. Silakan coba lagi.';
+          err.style.display = 'block';
+          card.classList.add('shake');
+          setTimeout(() => card.classList.remove('shake'), 400);
+          btn.disabled = false;
+          btn.innerText = '🔓 Buka Dashboard';
+          document.getElementById('password').select();
+        }
+      } catch (e) {
+        err.innerText = 'Gagal terhubung ke server.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.innerText = '🔓 Buka Dashboard';
+      }
+    });
+  </script>
+</body>
+</html>`;
+
 const GENERATOR_HTML = `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -358,6 +590,8 @@ const GENERATOR_HTML = `<!DOCTYPE html>
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-reset { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
     .btn-reset:hover { background: #fee2e2; }
+    .btn-logout { background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
+    .btn-logout:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
     
     /* Progress Bar Box */
     .progress-box { margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -414,8 +648,14 @@ const GENERATOR_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="header-card">
-      <h1>🖨️ Generator QR Code & Export Canva / Figma</h1>
-      <p class="subtitle">Generate stand akrilik Google Review, copy link untuk NFC, atau export ZIP untuk Figma & Canva.</p>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div>
+          <h1>🖨️ Generator QR Code & Export Canva / Figma</h1>
+          <p class="subtitle" style="margin-bottom: 0;">Generate stand akrilik Google Review, copy link untuk NFC, atau export ZIP untuk Figma & Canva.</p>
+        </div>
+        <button type="button" class="btn-logout" onclick="logoutAdmin()" title="Keluar dari sesi admin">🚪 Logout</button>
+      </div>
+      <div style="margin-bottom: 20px;"></div>
       
       <div class="controls-grid">
         <div class="form-group">
@@ -816,6 +1056,13 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       showToast('File CSV berhasil diunduh!');
     }
 
+    async function logoutAdmin() {
+      if (confirm('Keluar dari sesi admin?')) {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.reload();
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadFormState();
       if (!document.getElementById('domainInput').value) {
@@ -833,8 +1080,39 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 1. Root & Admin Tools Routing
-    if (path === '/' || path === '' || path === '/tools/generator' || path === '/tools/qr') {
+    // 1. Auth API Routes
+    if (path === '/api/auth/login' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const adminPassword = env?.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+        if (body.password === adminPassword) {
+          const token = getAdminToken(adminPassword);
+          const res = Response.json({ success: true });
+          res.headers.set('Set-Cookie', `admin_auth=${token}; Path=/; Max-Age=2592000; SameSite=Lax; HttpOnly`);
+          return res;
+        }
+        return Response.json({ success: false, error: 'Password admin salah!' }, { status: 401 });
+      } catch (e) {
+        return Response.json({ success: false, error: e.message }, { status: 500 });
+      }
+    }
+
+    if (path === '/api/auth/logout') {
+      const res = Response.json({ success: true });
+      res.headers.set('Set-Cookie', 'admin_auth=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly');
+      return res;
+    }
+
+    // 2. Root & Admin Tools Routing (Protected)
+    if (path === '/' || path === '' || path === '/tools/generator' || path === '/tools/qr' || path === '/admin') {
+      if (!isUserAuthenticated(request, env)) {
+        return new Response(LOGIN_HTML, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+          }
+        });
+      }
       return new Response(GENERATOR_HTML, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
