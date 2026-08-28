@@ -357,7 +357,7 @@ var GENERATOR_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batch QR & NFC Stand Generator</title>
+  <title>Batch QR Code & Canva CSV Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -369,10 +369,13 @@ var GENERATOR_HTML = `<!DOCTYPE html>
       --card-bg: #ffffff;
       --border: #e2e8f0;
       --google-yellow: #fbbc04;
+      --google-red: #ea4335;
+      --google-green: #34a853;
+      --google-blue: #4285f4;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background: #f8fafc; color: #334155; padding: 30px 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
+    .container { max-width: 1050px; margin: 0 auto; }
     .header-card { background: #fff; padding: 28px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
     h1 { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
     p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; }
@@ -380,19 +383,33 @@ var GENERATOR_HTML = `<!DOCTYPE html>
     .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
     .form-group input, .form-group select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13.5px; outline: none; }
     .form-group input:focus { border-color: var(--primary); }
-    .btn-bar { display: flex; gap: 12px; }
-    .btn { padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-bar { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #1557b0; }
+    .btn-success { background: #16a34a; color: #fff; }
+    .btn-success:hover { background: #15803d; }
     .btn-secondary { background: #e2e8f0; color: var(--dark); }
     .btn-secondary:hover { background: #cbd5e1; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; }
-    .stand-header { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
-    .stand-stars { color: var(--google-yellow); font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
-    .qr-frame { background: #fff; display: inline-flex; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
-    .tag-badge { display: inline-block; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #475569; font-family: monospace; margin-bottom: 6px; }
-    .nfc-hint { font-size: 11px; font-weight: 600; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; }
+    .stand-header { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; color: #0f172a; margin-bottom: 12px; text-transform: uppercase; }
+    
+    /* Google 4-Corner Accent Frame */
+    .qr-wrapper { position: relative; display: inline-block; padding: 14px; margin-bottom: 10px; }
+    .corner { position: absolute; width: 22px; height: 22px; }
+    .corner-tl { top: 0; left: 0; border-top: 4px solid var(--google-red); border-left: 4px solid var(--google-red); border-top-left-radius: 6px; }
+    .corner-tr { top: 0; right: 0; border-top: 4px solid var(--google-yellow); border-right: 4px solid var(--google-yellow); border-top-right-radius: 6px; }
+    .corner-bl { bottom: 0; left: 0; border-bottom: 4px solid var(--google-green); border-left: 4px solid var(--google-green); border-bottom-left-radius: 6px; }
+    .corner-br { bottom: 0; right: 0; border-bottom: 4px solid var(--google-blue); border-right: 4px solid var(--google-blue); border-bottom-right-radius: 6px; }
+    .qr-box { display: flex; align-items: center; justify-content: center; background: #fff; }
+
+    .stand-stars { color: var(--google-yellow); font-size: 20px; margin-bottom: 6px; letter-spacing: 2px; }
+    .nfc-text { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: 1px; }
+    .tag-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 700; color: #64748b; font-family: monospace; }
+    .brand-footer { font-size: 10px; color: #94a3b8; margin-top: 6px; }
+
     @media print {
       body { background: #fff; padding: 0; }
       .header-card, .btn-bar { display: none !important; }
@@ -404,19 +421,20 @@ var GENERATOR_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="header-card">
-      <h1>\u{1F5A8}\uFE0F Batch QR Code & NFC Generator</h1>
-      <p class="subtitle">Generate Tag ID unik dan QR Code siap cetak untuk kartu/stand akrilik Google Review Anda.</p>
+      <h1>\u{1F5A8}\uFE0F Generator QR Code & Export Canva</h1>
+      <p class="subtitle">Generate stand akrilik Google Review atau export file CSV untuk Canva Bulk Create.</p>
+      
       <div class="controls-grid">
         <div class="form-group">
           <label>Mode Cetak</label>
           <select id="modeSelect" onchange="toggleMode()">
-            <option value="single">\u{1F3AF} 1 QR Sama (Cetak Banyak untuk Meja/Cabang yang Sama)</option>
+            <option value="single">\u{1F3AF} 1 QR Sama (Cetak Banyak untuk 1 Toko / Banyak Meja)</option>
             <option value="batch">\u{1F522} ID Berurutan (Tiap Stiker Beda ID untuk Klien Berbeda)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Domain / URL Worker Anda</label>
-          <input type="text" id="domainInput" value="" placeholder="https://domain-anda.com" />
+          <label>Domain Server Worker Anda</label>
+          <input type="text" id="domainInput" value="" placeholder="https://qr-review-business.vercel.app" />
         </div>
         <div class="form-group" id="tagIdGroup">
           <label>ID Kartu / QR</label>
@@ -431,17 +449,21 @@ var GENERATOR_HTML = `<!DOCTYPE html>
           <input type="number" id="startNum" value="101" min="1" />
         </div>
         <div class="form-group">
-          <label>Jumlah Stiker Dicetak</label>
-          <input type="number" id="qtyInput" value="10" min="1" max="100" />
+          <label>Jumlah Stiker Dicetak / Diexport</label>
+          <input type="number" id="qtyInput" value="10" min="1" max="500" />
         </div>
       </div>
+      
       <div class="btn-bar">
-        <button class="btn btn-primary" onclick="generateBatch()">\u26A1 Generate QR Codes</button>
-        <button class="btn btn-secondary" onclick="window.print()">\u{1F5A8}\uFE0F Cetak / Print Lembar (A4)</button>
+        <button class="btn btn-primary" onclick="generateBatch()">\u26A1 Generate QR Preview</button>
+        <button class="btn btn-success" onclick="downloadCsvForCanva()">\u{1F4E5} Download CSV untuk Canva</button>
+        <button class="btn btn-secondary" onclick="window.print()">\u{1F5A8}\uFE0F Cetak Lembar A4 Langsung</button>
       </div>
     </div>
+    
     <div class="cards-grid" id="cardsContainer"></div>
   </div>
+
   <script>
     function toggleMode() {
       const mode = document.getElementById('modeSelect').value;
@@ -476,22 +498,68 @@ var GENERATOR_HTML = `<!DOCTYPE html>
         const targetUrl = domain + '/t/' + tagId;
         const card = document.createElement('div');
         card.className = 'stand-card';
-        card.innerHTML = '<div class="stand-header">Ulas Kami di Google</div>' +
+        card.innerHTML = 
+          '<div class="stand-header">REVIEW HERE</div>' +
+          '<div class="qr-wrapper">' +
+            '<div class="corner corner-tl"></div>' +
+            '<div class="corner corner-tr"></div>' +
+            '<div class="corner corner-bl"></div>' +
+            '<div class="corner corner-br"></div>' +
+            '<div class="qr-box" id="qr-' + tagId + '-' + i + '"></div>' +
+          '</div>' +
           '<div class="stand-stars">\u2605\u2605\u2605\u2605\u2605</div>' +
-          '<div class="qr-frame" id="qr-' + tagId + '-' + i + '"></div>' +
-          '<div><div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(Stiker #' + (i + 1) + ')' : '') + '</div>' +
-          '<div class="nfc-hint">\u{1F4F2} Tap NFC atau Scan QR</div></div>';
+          '<div class="nfc-text">((((NFC))))</div>' +
+          '<div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(#' + (i + 1) + ')' : '') + '</div>' +
+          '<div class="brand-footer">Powered by Codengine</div>';
         container.appendChild(card);
 
         new QRCode(document.getElementById('qr-' + tagId + '-' + i), {
           text: targetUrl,
-          width: 140,
-          height: 140,
+          width: 125,
+          height: 125,
           colorDark: '#0f172a',
           colorLight: '#ffffff',
           correctLevel: QRCode.CorrectLevel.M
         });
       }
+    }
+
+    function downloadCsvForCanva() {
+      let domain = document.getElementById('domainInput').value.trim() || window.location.origin;
+      if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+        domain = 'https://' + domain;
+      }
+      domain = domain.replace(/\\/+$/, '');
+
+      const mode = document.getElementById('modeSelect').value;
+      const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+
+      let csvContent = 'Tag_ID,QR_Link,Label\\n';
+
+      for (let i = 0; i < qty; i++) {
+        let tagId = '';
+        let label = '';
+        if (mode === 'single') {
+          tagId = document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01';
+          label = 'Copy #' + (i + 1);
+        } else {
+          const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
+          const start = parseInt(document.getElementById('startNum').value, 10) || 1;
+          tagId = prefix + '-' + (start + i);
+          label = 'Unit #' + (start + i);
+        }
+        const targetUrl = domain + '/t/' + tagId;
+        csvContent += '"' + tagId + '","' + targetUrl + '","' + label + '"\\n';
+      }
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'canva_qr_batch_' + mode + '_' + qty + '.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
