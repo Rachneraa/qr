@@ -4,251 +4,252 @@ import { sanitizeTagId, parseAndNormalizeGoogleReviewUrl } from './utils/googleR
 const SETUP_HTML = `<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Aktivasi Kartu Google Review</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aktivasi Google Review Stand</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #1a73e8;
-      --primary-hover: #1557b0;
-      --google-yellow: #fbbc04;
-      --google-red: #ea4335;
-      --google-green: #34a853;
-      --dark: #0f172a;
-      --text: #334155;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --border: #e2e8f0;
-      --radius: 18px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .badge {
+      display: inline-block;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .stars {
+      color: #f59e0b;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    p.desc {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #0f172a;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: #2563eb;
+    }
+    .helper {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+      margin-bottom: 18px;
+    }
+    .helper a {
+      color: #2563eb;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 6px;
+    }
+    .btn-submit {
+      width: 100%;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .btn-submit:active {
+      background: #1d4ed8;
+    }
+    .btn-submit:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f1f5f9 100%); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
-    .container { width: 100%; max-width: 440px; background: var(--card); border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 28px 22px; position: relative; overflow: hidden; }
-    .container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #4285f4 0%, #ea4335 25%, #fbbc05 50%, #34a853 75%, #4285f4 100%); }
-    
-    .badge-tag { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; }
-    .badge-tag span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--google-green); }
-    
-    .header { text-align: center; margin-bottom: 20px; }
-    .google-stars { color: var(--google-yellow); font-size: 22px; margin-bottom: 6px; letter-spacing: 2px; }
-    h1 { font-size: 21px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
-    p.subtitle { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
-
-    .form-group { margin-bottom: 16px; text-align: left; }
-    label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
-    input[type="text"] { width: 100%; padding: 14px 14px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); outline: none; background: #fff; }
-    input[type="text"]:focus { border-color: var(--primary); }
-
-    .helper-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
-    .btn-find-placeid { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 6px 10px; background: #fff; border: 1px solid var(--primary); border-radius: 6px; color: var(--primary); font-size: 11.5px; font-weight: 700; text-decoration: none; }
-
-    .preview-box { display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: left; }
-    .preview-box.active { display: block; }
-    .preview-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 100px; margin-bottom: 4px; display: inline-block; }
-    .preview-url { font-size: 11.5px; color: #166534; font-family: monospace; word-break: break-all; margin-bottom: 6px; }
-    .btn-test { font-size: 11.5px; font-weight: 700; color: var(--primary); text-decoration: none; }
-
-    .btn-submit { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; }
-    .btn-submit:active { background: var(--primary-hover); }
-
-    /* Modal Styles */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
-    .modal-overlay.open { display: flex; }
-    .modal-box { background: #fff; width: 100%; max-width: 360px; border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-    .modal-icon { width: 50px; height: 50px; border-radius: 50%; background: #fef2f2; color: var(--google-red); display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
-    .modal-box h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: var(--dark); }
-    .modal-box p { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 18px; }
-    .modal-actions { display: flex; gap: 8px; }
-    .btn-modal { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; border: none; }
-    .btn-modal-cancel { background: #f1f5f9; color: var(--text); }
-    .btn-modal-confirm { background: var(--primary); color: #fff; }
-
-    /* Success Card */
-    .success-card { display: none; text-align: center; }
-    .success-card.active { display: block; }
-    .success-icon { width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 14px; }
-    .btn-open-review { display: block; width: 100%; background: var(--primary); color: #fff; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14.5px; margin-top: 18px; }
+    /* Success View */
+    #successView {
+      display: none;
+      text-align: center;
+    }
+    .icon-success {
+      width: 56px;
+      height: 56px;
+      background: #dcfce7;
+      color: #16a34a;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+    .btn-review-link {
+      display: block;
+      width: 100%;
+      background: #16a34a;
+      color: #ffffff;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="mainForm">
-      <div class="header">
-        <div class="badge-tag">
-          <span class="dot"></span>
-          ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
+
+  <div class="card">
+    <div id="setupView">
+      <div class="badge">ID: {{TAG_ID}}</div>
+      <div class="stars">★★★★★</div>
+      <h1>Aktivasi Stand Google Review</h1>
+      <p class="desc">Masukkan nama toko dan Place ID untuk mengaktifkan pop-up ulasan rating 5 bintang toko Anda.</p>
+
+      <form id="claimForm">
+        <div class="form-group">
+          <label for="bizName">1. Nama Toko / Bisnis</label>
+          <input type="text" id="bizName" placeholder="Contoh: Alun alun cimahi" required autocomplete="off" />
         </div>
-        <div class="google-stars">★★★★★</div>
-        <h1>Aktivasi Stand Google Review</h1>
-        <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up rating 5 bintang Google.</p>
-      </div>
 
-      <div class="form-group">
-        <label>1. Nama Toko / Bisnis</label>
-        <input type="text" id="storeName" placeholder="Contoh: Alun alun cimahi" />
-      </div>
+        <div class="form-group">
+          <label for="bizPlace">2. Google Place ID / Link Ulasan</label>
+          <input type="text" id="bizPlace" placeholder="ChIJ... atau link review" required autocomplete="off" />
+        </div>
 
-      <div class="form-group">
-        <label>2. Google Place ID / Link Review</label>
-        <input type="text" id="storePlaceId" placeholder="ChIJ... atau link review" />
-      </div>
-
-      <div class="helper-box">
-        <b>💡 Cari Kode Place ID Toko:</b><br>
-        Buka pencari resmi Google, ketik nama toko, lalu salin kodenya.
-        <div>
-          <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
-            🔍 Buka Pencari Place ID Google (Gratis)
+        <div class="helper">
+          <b>💡 Cara dapatkan Place ID Toko:</b><br>
+          Ketik nama toko Anda di web resmi Google, lalu salin kodenya.<br>
+          <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank">
+            🔍 Buka Pencari Place ID Google (Gratis) &rarr;
           </a>
         </div>
-      </div>
 
-      <div class="preview-box" id="previewBox">
-        <span class="preview-badge">✓ Link Review 5-Bintang Siap</span>
-        <div class="preview-url" id="previewUrlText"></div>
-        <a href="#" target="_blank" class="btn-test" id="btnTestLink">👀 Uji Coba Buka Link di Tab Baru</a>
-      </div>
-
-      <button type="button" class="btn-submit" id="btnTriggerModal">
-        🔒 Simpan & Kunci Kartu Ini
-      </button>
+        <button type="submit" id="submitBtn" class="btn-submit">
+          🔒 Simpan & Kunci Kartu Ini
+        </button>
+      </form>
     </div>
 
-    <div id="successCard" class="success-card">
-      <div class="success-icon">✓</div>
-      <h1 style="color: #15803d; margin-bottom: 6px; font-size: 20px;">Kartu Berhasil Diaktifkan!</h1>
-      <p style="color: #64748b; font-size: 13.5px;">
-        Stand ulasan untuk <b id="displayStoreName" style="color: #0f172a;"></b> sekarang terkunci & siap digunakan.
-      </p>
-      <a href="#" id="linkDirectReview" target="_blank" class="btn-open-review">
-        🚀 Buka Form Bintang 5 Sekarang
+    <div id="successView">
+      <div class="icon-success">✓</div>
+      <h1 style="color: #16a34a; margin-bottom: 6px;">Kartu Berhasil Terkunci!</h1>
+      <p class="desc">Stand review untuk <b id="resultName" style="color: #0f172a;"></b> sudah aktif.</p>
+
+      <a href="#" id="resultLink" target="_blank" class="btn-review-link">
+        🚀 Buka Google Review Sekarang
       </a>
-    </div>
-  </div>
-
-  <!-- Modal Konfirmasi -->
-  <div class="modal-overlay" id="confirmModal">
-    <div class="modal-box">
-      <div class="modal-icon">🔒</div>
-      <h3>Kunci Kartu Permanen?</h3>
-      <p>
-        Setelah disimpan, kartu ini akan langsung <b>terkunci permanen</b> untuk toko Anda.
-      </p>
-      <div class="modal-actions">
-        <button type="button" class="btn-modal btn-modal-cancel" id="btnCancelModal">Batal</button>
-        <button type="button" class="btn-modal btn-modal-confirm" id="btnConfirmLock">Ya, Kunci Sekarang</button>
-      </div>
     </div>
   </div>
 
   <script>
     var TAG_ID = "{{TAG_ID}}";
-    var mainForm = document.getElementById('mainForm');
-    var successCard = document.getElementById('successCard');
-    var storeNameInput = document.getElementById('storeName');
-    var storePlaceIdInput = document.getElementById('storePlaceId');
-    var previewBox = document.getElementById('previewBox');
-    var previewUrlText = document.getElementById('previewUrlText');
-    var btnTestLink = document.getElementById('btnTestLink');
+    var claimForm = document.getElementById('claimForm');
+    var submitBtn = document.getElementById('submitBtn');
+    var setupView = document.getElementById('setupView');
+    var successView = document.getElementById('successView');
+    var resultName = document.getElementById('resultName');
+    var resultLink = document.getElementById('resultLink');
 
-    var btnTriggerModal = document.getElementById('btnTriggerModal');
-    var confirmModal = document.getElementById('confirmModal');
-    var btnCancelModal = document.getElementById('btnCancelModal');
-    var btnConfirmLock = document.getElementById('btnConfirmLock');
+    claimForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    var generatedReviewUrl = '';
+      var name = document.getElementById('bizName').value.trim();
+      var place = document.getElementById('bizPlace').value.trim();
 
-    function updatePreview() {
-      var raw = (storePlaceIdInput.value || '').trim();
-      if (!raw) {
-        previewBox.classList.remove('active');
-        generatedReviewUrl = '';
+      if (!name || !place) {
+        alert('Mohon isi semua data.');
         return;
       }
 
-      var match = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
-      if (match) {
-        generatedReviewUrl = 'https://search.google.com/local/writereview?placeid=' + match[0];
-      } else if (raw.indexOf('search.google.com/local/writereview') !== -1) {
-        generatedReviewUrl = raw;
-      } else if (raw.indexOf('g.page/') !== -1) {
-        generatedReviewUrl = (raw.indexOf('http') === 0) ? raw : 'https://' + raw;
-      } else {
-        var firstLine = raw.split('\n')[0].trim();
-        generatedReviewUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
-      }
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Menyimpan & Mengunci...';
 
-      previewUrlText.textContent = generatedReviewUrl;
-      btnTestLink.href = generatedReviewUrl;
-      previewBox.classList.add('active');
-    }
+      try {
+        var response = await fetch('/api/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tagId: TAG_ID,
+            businessName: name,
+            reviewUrl: place
+          })
+        });
 
-    storePlaceIdInput.oninput = updatePreview;
+        var result = await response.json();
 
-    btnTriggerModal.onclick = function() {
-      var name = (storeNameInput.value || '').trim();
-      var placeId = (storePlaceIdInput.value || '').trim();
-
-      if (!name) {
-        alert('Mohon isi nama toko Anda.');
-        storeNameInput.focus();
-        return;
-      }
-      if (!placeId) {
-        alert('Mohon isi Place ID atau Link Ulasan toko Anda.');
-        storePlaceIdInput.focus();
-        return;
-      }
-
-      confirmModal.className = 'modal-overlay open';
-    };
-
-    btnCancelModal.onclick = function() {
-      confirmModal.className = 'modal-overlay';
-    };
-
-    btnConfirmLock.onclick = function() {
-      btnConfirmLock.disabled = true;
-      btnConfirmLock.textContent = 'Menyimpan...';
-
-      var name = (storeNameInput.value || '').trim();
-      var placeId = (storePlaceIdInput.value || '').trim();
-
-      fetch('/api/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tagId: TAG_ID,
-          businessName: name,
-          reviewUrl: placeId
-        })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        confirmModal.className = 'modal-overlay';
-        if (data && data.success) {
-          mainForm.style.display = 'none';
-          document.getElementById('displayStoreName').textContent = name;
-          document.getElementById('linkDirectReview').href = data.targetUrl || generatedReviewUrl;
-          successCard.className = 'success-card active';
+        if (response.ok && result.success) {
+          setupView.style.display = 'none';
+          resultName.innerText = name;
+          resultLink.href = result.targetUrl;
+          successView.style.display = 'block';
         } else {
-          alert((data && data.error) || 'Gagal mengunci kartu.');
-          btnConfirmLock.disabled = false;
-          btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
+          alert(result.error || 'Gagal menyimpan.');
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🔒 Simpan & Kunci Kartu Ini';
         }
-      })
-      .catch(function(err) {
-        alert('Terjadi kesalahan: ' + err.message);
-        btnConfirmLock.disabled = false;
-        btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
-        confirmModal.className = 'modal-overlay';
-      });
-    };
+      } catch (err) {
+        alert('Gagal terhubung ke server: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = '🔒 Simpan & Kunci Kartu Ini';
+      }
+    });
   </script>
 </body>
 </html>`;
