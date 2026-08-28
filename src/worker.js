@@ -557,7 +557,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
 
     function toggleDoneStatus(tagId, forceValue, cardIndex) {
       const doneMap = getDoneMap();
-      const current = !doneMap[tagId];
+      const current = !!doneMap[tagId];
       const newVal = forceValue !== undefined ? forceValue : !current;
       doneMap[tagId] = newVal;
       saveDoneMap(doneMap);
@@ -642,7 +642,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
           trackingKey = tagId;
         }
 
-        const isDone = !doneMap[trackingKey];
+        const isDone = !!doneMap[trackingKey];
         const targetUrl = domain + '/t/' + tagId;
         const card = document.createElement('div');
         card.className = 'stand-card ' + (isDone ? 'card-done' : '');
@@ -823,6 +823,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       }
       toggleMode();
       generateBatch(false);
+    });
   </script>
 </body>
 </html>`;
