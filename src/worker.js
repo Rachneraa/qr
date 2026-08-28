@@ -44,7 +44,7 @@ const SETUP_HTML = `<!DOCTYPE html>
 
     .form-group { margin-bottom: 18px; text-align: left; }
     label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
-    input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; }
+    input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; -webkit-appearance: none; }
     input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
 
     .helper-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
@@ -57,11 +57,12 @@ const SETUP_HTML = `<!DOCTYPE html>
     .preview-url { font-size: 12px; color: #166534; font-family: monospace; word-break: break-all; margin-bottom: 8px; }
     .btn-test { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 6px 10px; border-radius: 8px; background: rgba(26, 115, 232, 0.08); }
 
-    .btn-submit { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #ffffff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35); }
-    .btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-submit { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #ffffff; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35); user-select: none; -webkit-user-select: none; }
+    .btn-submit:active { background: #0d47a1; transform: scale(0.98); }
+    .btn-submit.loading { background: #64748b; pointer-events: none; }
     .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
+    /* Success State */
     .success-view { display: none; text-align: center; }
     .success-view.active { display: block; }
     .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
@@ -86,12 +87,12 @@ const SETUP_HTML = `<!DOCTYPE html>
       <div class="setup-form">
         <div class="form-group">
           <label for="businessName">1. Nama Toko / Bisnis</label>
-          <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+          <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" autocomplete="off" />
         </div>
 
         <div class="form-group">
           <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
-          <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
+          <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" autocomplete="off" />
         </div>
 
         <div class="helper-box">
@@ -139,36 +140,36 @@ const SETUP_HTML = `<!DOCTYPE html>
   </div>
 
   <script>
-    const TAG_ID = "{{TAG_ID}}";
-    const setupView = document.getElementById('setupView');
-    const successView = document.getElementById('successView');
-    const nameInput = document.getElementById('businessName');
-    const inputField = document.getElementById('placeIdInput');
-    const previewBox = document.getElementById('previewBox');
-    const previewUrlText = document.getElementById('previewUrlText');
-    const btnTestLink = document.getElementById('btnTestLink');
-    const btnSubmit = document.getElementById('btnSubmit');
-    const alertBanner = document.getElementById('alertBanner');
+    var TAG_ID = "{{TAG_ID}}";
+    var setupView = document.getElementById('setupView');
+    var successView = document.getElementById('successView');
+    var nameInput = document.getElementById('businessName');
+    var inputField = document.getElementById('placeIdInput');
+    var previewBox = document.getElementById('previewBox');
+    var previewUrlText = document.getElementById('previewUrlText');
+    var btnTestLink = document.getElementById('btnTestLink');
+    var btnSubmit = document.getElementById('btnSubmit');
+    var alertBanner = document.getElementById('alertBanner');
 
-    let finalDirectUrl = '';
+    var finalDirectUrl = '';
 
     function computeReviewUrl() {
-      const raw = inputField.value.trim();
+      var raw = (inputField.value || '').trim();
       if (!raw) {
         previewBox.classList.remove('active');
         finalDirectUrl = '';
         return;
       }
 
-      const placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      var placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
       if (placeMatch) {
         finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
-      } else if (raw.includes('search.google.com/local/writereview')) {
+      } else if (raw.indexOf('search.google.com/local/writereview') !== -1) {
         finalDirectUrl = raw;
-      } else if (raw.includes('g.page/')) {
-        finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
+      } else if (raw.indexOf('g.page/') !== -1) {
+        finalDirectUrl = (raw.indexOf('http') === 0) ? raw : 'https://' + raw;
       } else {
-        const firstLine = raw.split('\n')[0].trim();
+        var firstLine = raw.split('\n')[0].trim();
         finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
       }
 
@@ -178,10 +179,13 @@ const SETUP_HTML = `<!DOCTYPE html>
     }
 
     inputField.addEventListener('input', computeReviewUrl);
+    inputField.addEventListener('keyup', computeReviewUrl);
+    inputField.addEventListener('change', computeReviewUrl);
 
     function showAlert(msg) {
       alertBanner.textContent = msg;
       alertBanner.className = 'alert-banner error';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function clearAlert() {
@@ -192,8 +196,8 @@ const SETUP_HTML = `<!DOCTYPE html>
     async function handleSave() {
       clearAlert();
 
-      const name = nameInput.value.trim();
-      const placeId = inputField.value.trim();
+      var name = (nameInput.value || '').trim();
+      var placeId = (inputField.value || '').trim();
 
       if (!name) {
         showAlert('Mohon isi nama toko Anda.');
@@ -207,42 +211,47 @@ const SETUP_HTML = `<!DOCTYPE html>
         return;
       }
 
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = '⏳ Menyimpan & Mengunci...';
+      btnSubmit.className = 'btn-submit loading';
+      btnSubmit.textContent = '⏳ Sedang Mengunci Kartu...';
 
       try {
-        const payload = {
+        var payload = {
           tagId: TAG_ID,
           businessName: name,
           reviewUrl: placeId
         };
 
-        const res = await fetch('/api/claim', {
+        var res = await fetch('/api/claim', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        var data = await res.json();
 
         if (res.ok && data.success) {
           setupView.style.display = 'none';
           document.getElementById('successBusinessName').textContent = name;
           document.getElementById('successReviewBtn').href = data.targetUrl || finalDirectUrl;
           successView.classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           showAlert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
-          btnSubmit.disabled = false;
+          btnSubmit.className = 'btn-submit';
           btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
         }
       } catch (err) {
         showAlert('Gagal terhubung ke server: ' + err.message);
-        btnSubmit.disabled = false;
+        btnSubmit.className = 'btn-submit';
         btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
       }
     }
 
     btnSubmit.addEventListener('click', handleSave);
+    btnSubmit.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      handleSave();
+    });
   </script>
 </body>
 </html>`;
