@@ -916,7 +916,7 @@ export default {
           return Response.json({ success: false, error: 'Nama bisnis wajib diisi' }, { status: 400 });
         }
 
-        const parsedUrl = parseAndNormalizeGoogleReviewUrl(reviewUrl);
+        const parsedUrl = await parseAndNormalizeGoogleReviewUrl(reviewUrl, businessName);
         if (!parsedUrl.valid) {
           return Response.json({ success: false, error: parsedUrl.error }, { status: 400 });
         }

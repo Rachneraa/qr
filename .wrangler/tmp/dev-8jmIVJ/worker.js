@@ -49,11 +49,12 @@ function sanitizeTagId(rawId) {
   return rawId.trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
 }
 __name(sanitizeTagId, "sanitizeTagId");
-function parseAndNormalizeGoogleReviewUrl(input) {
+async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   if (!input || typeof input !== "string") {
     return { valid: false, error: "URL atau Place ID tidak boleh kosong" };
   }
   const trimmed = input.trim();
+  const safeName = businessName ? encodeURIComponent(businessName.trim()) : "Review";
   if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
     return {
       valid: true,
@@ -73,41 +74,89 @@ function parseAndNormalizeGoogleReviewUrl(input) {
       return { valid: false, error: "Format URL Google Review tidak valid" };
     }
   }
-  if (trimmed.includes("google.com/maps") || trimmed.includes("maps.google.com") || trimmed.includes("maps.app.goo.gl") || trimmed.includes("g.page")) {
+  if (trimmed.includes("g.page/") && trimmed.includes("/review")) {
+    return {
+      valid: true,
+      url: trimmed.startsWith("http") ? trimmed : `https://${trimmed}`,
+      type: "gpage_review"
+    };
+  }
+  if (trimmed.includes("maps.app.goo.gl") || trimmed.includes("goo.gl/maps")) {
     try {
-      const parsed = new URL(trimmed);
+      const targetUrl = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+      const response = await fetch(targetUrl, {
+        method: "GET",
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      });
+      const finalUrl = response.url || targetUrl;
+      const parsed = new URL(finalUrl);
+      const ftid = parsed.searchParams.get("ftid");
+      if (ftid) {
+        return {
+          valid: true,
+          url: `https://www.google.com/search?q=${safeName}&lrd=${ftid},3`,
+          type: "ftid_direct_review"
+        };
+      }
       const placeId = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
       if (placeId) {
         return {
           valid: true,
           url: `https://search.google.com/local/writereview?placeid=${placeId}`,
-          type: "place_id_extracted"
+          type: "place_id"
         };
       }
+      const query = parsed.searchParams.get("q") || businessName;
       return {
         valid: true,
-        url: parsed.toString(),
-        type: "maps_url"
+        url: `https://www.google.com/search?q=${encodeURIComponent(query)}+reviews`,
+        type: "resolved_query_review"
       };
+    } catch (e) {
+      console.warn("Failed to resolve maps shortlink, using direct search fallback:", e);
+      return {
+        valid: true,
+        url: `https://www.google.com/search?q=${safeName}+reviews`,
+        type: "query_fallback"
+      };
+    }
+  }
+  if (trimmed.includes("google.com/maps")) {
+    try {
+      const parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+      const ftid = parsed.searchParams.get("ftid");
+      if (ftid) {
+        return {
+          valid: true,
+          url: `https://www.google.com/search?q=${safeName}&lrd=${ftid},3`,
+          type: "ftid_direct_review"
+        };
+      }
+      const placeId = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
+      if (placeId) {
+        return {
+          valid: true,
+          url: `https://search.google.com/local/writereview?placeid=${placeId}`,
+          type: "place_id"
+        };
+      }
     } catch {
-      return { valid: false, error: "Format URL Google Maps tidak valid" };
     }
   }
   if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
-    try {
-      const parsed = new URL(trimmed);
-      return {
-        valid: true,
-        url: parsed.toString(),
-        type: "custom_url"
-      };
-    } catch {
-      return { valid: false, error: "Format URL tidak valid" };
-    }
+    return {
+      valid: true,
+      url: trimmed,
+      type: "custom_url"
+    };
   }
   return {
-    valid: false,
-    error: "Masukkan URL Google Maps / Review yang valid atau Place ID"
+    valid: true,
+    url: `https://www.google.com/search?q=${encodeURIComponent(trimmed)}+reviews`,
+    type: "search_query"
   };
 }
 __name(parseAndNormalizeGoogleReviewUrl, "parseAndNormalizeGoogleReviewUrl");
@@ -1002,7 +1051,7 @@ var worker_default = {
         if (!businessName) {
           return Response.json({ success: false, error: "Nama bisnis wajib diisi" }, { status: 400 });
         }
-        const parsedUrl = parseAndNormalizeGoogleReviewUrl(reviewUrl);
+        const parsedUrl = await parseAndNormalizeGoogleReviewUrl(reviewUrl, businessName);
         if (!parsedUrl.valid) {
           return Response.json({ success: false, error: parsedUrl.error }, { status: 400 });
         }

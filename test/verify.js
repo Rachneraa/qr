@@ -9,14 +9,14 @@ console.assert(cleanTag === 'REV-001', `Sanitizer failed: got ${cleanTag}`);
 console.log('✅ Sanitizer passed: REV-001');
 
 // 2. Test Place ID Parser
-const placeIdRes = parseAndNormalizeGoogleReviewUrl('ChIJN1t_tDeuEmsRUsoyG83frY4');
+const placeIdRes = await parseAndNormalizeGoogleReviewUrl('ChIJN1t_tDeuEmsRUsoyG83frY4');
 console.assert(placeIdRes.valid && placeIdRes.type === 'place_id', 'Place ID parse failed');
 console.log('✅ Place ID parser passed:', placeIdRes.url);
 
 // 3. Test Maps URL Parser
-const mapsRes = parseAndNormalizeGoogleReviewUrl('https://maps.app.goo.gl/example123');
+const mapsRes = await parseAndNormalizeGoogleReviewUrl('https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic', 'Alun alun cimahi');
 console.assert(mapsRes.valid, 'Maps URL parse failed');
-console.log('✅ Maps URL parser passed:', mapsRes.url);
+console.log('✅ Maps URL parser passed (Resolved to direct review popup):', mapsRes.url);
 
 // 4. Test Mock KV Worker Execution
 const mockKVStore = new Map();
