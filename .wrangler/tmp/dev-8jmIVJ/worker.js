@@ -49,6 +49,33 @@ function sanitizeTagId(rawId) {
   return rawId.trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
 }
 __name(sanitizeTagId, "sanitizeTagId");
+function ftidToPlaceId(ftid) {
+  if (!ftid || typeof ftid !== "string")
+    return null;
+  const parts = ftid.trim().split(":");
+  if (parts.length !== 2)
+    return null;
+  try {
+    const f1 = BigInt(parts[0]);
+    const f2 = BigInt(parts[1]);
+    const buf = new Uint8Array(18);
+    const view = new DataView(buf.buffer);
+    buf[0] = 9;
+    view.setBigUint64(1, f1, true);
+    buf[9] = 17;
+    view.setBigUint64(10, f2, true);
+    let binary = "";
+    for (let i = 0; i < buf.byteLength; i++) {
+      binary += String.fromCharCode(buf[i]);
+    }
+    const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return "ChIJ" + base64.substring(1);
+  } catch (err) {
+    console.error("FTID conversion error:", err);
+    return null;
+  }
+}
+__name(ftidToPlaceId, "ftidToPlaceId");
 async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   if (!input || typeof input !== "string") {
     return { valid: false, error: "Place ID atau Link Google Review tidak boleh kosong" };
@@ -62,6 +89,17 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       url: `https://search.google.com/local/writereview?placeid=${cleanPlaceId}`,
       type: "place_id"
     };
+  }
+  const ftidMatch = trimmed.match(/0x[0-9a-fA-F]+:0x[0-9a-fA-F]+/);
+  if (ftidMatch) {
+    const converted = ftidToPlaceId(ftidMatch[0]);
+    if (converted) {
+      return {
+        valid: true,
+        url: `https://search.google.com/local/writereview?placeid=${converted}`,
+        type: "ftid_converted"
+      };
+    }
   }
   if (trimmed.includes("search.google.com/local/writereview")) {
     try {
@@ -577,7 +615,10 @@ var worker_default = {
             name = decodeURIComponent(qMatch[1].replace(/\+/g, " ")).split(",")[0].replace(/^[0-9A-Z+]+\s+/, "").trim();
           }
         }
-        const placeId = placeIdMatch ? placeIdMatch[0] : ftidMatch ? ftidMatch[1] : null;
+        let placeId = placeIdMatch ? placeIdMatch[0] : null;
+        if (!placeId && ftidMatch) {
+          placeId = ftidToPlaceId(ftidMatch[1]);
+        }
         if (!placeId) {
           return Response.json({ success: false, error: "Tidak dapat mendeteksi Place ID" }, { status: 404 });
         }

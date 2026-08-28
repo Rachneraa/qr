@@ -1,4 +1,4 @@
-import { sanitizeTagId, parseAndNormalizeGoogleReviewUrl } from './utils/googleReview.js';
+import { sanitizeTagId, parseAndNormalizeGoogleReviewUrl, ftidToPlaceId } from './utils/googleReview.js';
 
 // HTML Template View Injections
 const SETUP_HTML = `<!DOCTYPE html>
@@ -490,7 +490,10 @@ export default {
           }
         }
 
-        const placeId = placeIdMatch ? placeIdMatch[0] : (ftidMatch ? ftidMatch[1] : null);
+        let placeId = placeIdMatch ? placeIdMatch[0] : null;
+        if (!placeId && ftidMatch) {
+          placeId = ftidToPlaceId(ftidMatch[1]);
+        }
 
         if (!placeId) {
           return Response.json({ success: false, error: 'Tidak dapat mendeteksi Place ID' }, { status: 404 });
