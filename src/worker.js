@@ -18,7 +18,7 @@ const SETUP_HTML = `<!DOCTYPE html>
       --google-yellow: #fbbc04;
       --google-red: #ea4335;
       --google-green: #34a853;
-      --dark: #1e293b;
+      --dark: #0f172a;
       --text: #334155;
       --text-muted: #64748b;
       --bg: #f8fafc;
@@ -27,331 +27,55 @@ const SETUP_HTML = `<!DOCTYPE html>
       --radius: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f1f5f9 100%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 16px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 440px;
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
-      padding: 28px 24px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 6px;
-      background: linear-gradient(90deg, #4285f4 0%, #ea4335 25%, #fbbc05 50%, #34a853 75%, #4285f4 100%);
-    }
-
-    .badge-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f1f5f9;
-      padding: 6px 12px;
-      border-radius: 100px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
-    }
-
-    .badge-tag span.dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--google-green);
-      display: inline-block;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .google-stars {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-      font-size: 22px;
-      color: var(--google-yellow);
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--dark);
-      line-height: 1.3;
-      margin-bottom: 8px;
-    }
-
-    p.subtitle {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 8px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1.5px solid var(--border);
-      font-size: 14px;
-      color: var(--dark);
-      background: #fcfdfe;
-      transition: all 0.2s ease;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--primary);
-      background: #fff;
-      box-shadow: 0 0 0 4px var(--primary-light);
-    }
-
-    .helper-card {
-      background: #f8fafc;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 20px;
-      font-size: 12.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .helper-card b {
-      color: var(--dark);
-    }
-
-    .helper-steps {
-      margin-top: 8px;
-      padding-left: 18px;
-    }
-
-    .helper-steps li {
-      margin-bottom: 4px;
-    }
-
-    .preview-box {
-      display: none;
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    .preview-box.active {
-      display: block;
-    }
-
-    .preview-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #166534;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .preview-url {
-      font-size: 12px;
-      color: #15803d;
-      word-break: break-all;
-      line-height: 1.4;
-    }
-
-    .btn-test {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--primary);
-      text-decoration: none;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(26, 115, 232, 0.08);
-      cursor: pointer;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 16px;
-      border-radius: 14px;
-      border: none;
-      background: var(--primary);
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35);
-    }
-
-    .btn-submit:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-    }
-
-    .warning-lock {
-      margin-top: 14px;
-      font-size: 11.5px;
-      color: #94a3b8;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 999;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.2s ease;
-    }
-
-    .modal-overlay.open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-box {
-      background: #fff;
-      width: 100%;
-      max-width: 380px;
-      border-radius: 20px;
-      padding: 24px;
-      text-align: center;
-      transform: scale(0.95);
-      transition: transform 0.2s ease;
-    }
-
-    .modal-overlay.open .modal-box {
-      transform: scale(1);
-    }
-
-    .modal-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: #fef2f2;
-      color: var(--google-red);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 14px;
-    }
-
-    .modal-box h3 {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--dark);
-      margin-bottom: 8px;
-    }
-
-    .modal-box p {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-cancel {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .btn-confirm {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: var(--google-red);
-      color: #fff;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f1f5f9 100%); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
+    .container { width: 100%; max-width: 460px; background: var(--card); border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 28px 24px; position: relative; overflow: hidden; }
+    .container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #4285f4 0%, #ea4335 25%, #fbbc05 50%, #34a853 75%, #4285f4 100%); }
+    .badge-tag { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 16px; }
+    .badge-tag span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--google-green); display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+    .header { text-align: center; margin-bottom: 20px; }
+    .google-stars { display: flex; justify-content: center; gap: 4px; font-size: 24px; color: var(--google-yellow); margin-bottom: 8px; }
+    h1 { font-size: 22px; font-weight: 800; color: var(--dark); line-height: 1.3; margin-bottom: 6px; }
+    p.subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+    .tab-bar { display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px; gap: 4px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; }
+    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+    .form-group { margin-bottom: 18px; text-align: left; position: relative; }
+    label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; }
+    input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
+    .dropdown-results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); margin-top: 6px; max-height: 220px; overflow-y: auto; z-index: 100; }
+    .dropdown-results.open { display: block; }
+    .result-item { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; text-align: left; transition: background 0.15s; }
+    .result-item:last-child { border-bottom: none; }
+    .result-item:hover, .result-item:active { background: var(--primary-light); }
+    .result-name { font-weight: 700; font-size: 13.5px; color: var(--dark); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+    .result-address { font-size: 11.5px; color: var(--text-muted); line-height: 1.3; }
+    .loading-hint { padding: 12px; font-size: 12.5px; color: var(--text-muted); text-align: center; }
+    .selected-card { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .selected-card.active { display: block; }
+    .selected-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .selected-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-change { font-size: 11.5px; font-weight: 700; color: var(--primary); background: none; border: none; cursor: pointer; }
+    .selected-title { font-size: 14px; font-weight: 800; color: var(--dark); margin-bottom: 2px; }
+    .selected-sub { font-size: 12px; color: #475569; line-height: 1.4; margin-bottom: 8px; }
+    .btn-test { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 6px 10px; border-radius: 8px; background: rgba(26, 115, 232, 0.08); }
+    .btn-submit { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #ffffff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35); }
+    .btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 999; opacity: 0; visibility: hidden; transition: all 0.2s ease; }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal-box { background: #fff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
+    .modal-overlay.open .modal-box { transform: scale(1); }
+    .modal-icon { width: 52px; height: 52px; border-radius: 50%; background: #fef2f2; color: var(--google-red); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; }
+    .modal-box h3 { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .modal-box p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; border: none; background: var(--google-red); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -362,48 +86,53 @@ const SETUP_HTML = `<!DOCTYPE html>
         ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
       </div>
       <div class="google-stars">★★★★★</div>
-      <h1>Aktivasi Kartu Google Review</h1>
-      <p class="subtitle">Hubungkan kartu NFC / Stand QR ini dengan halaman Google Review bisnis Anda.</p>
+      <h1>Aktivasi Google Review</h1>
+      <p class="subtitle">Cari nama toko Anda atau masukkan link Google Maps untuk mengaktifkan kartu ini.</p>
     </div>
 
-    <form id="setupForm">
+    <div class="tab-bar">
+      <button type="button" class="tab-btn active" id="tabAuto" onclick="switchTab('auto')">🔍 Cari Nama Toko</button>
+      <button type="button" class="tab-btn" id="tabManual" onclick="switchTab('manual')">🔗 Paste Link Manual</button>
+    </div>
+
+    <div id="sectionAuto">
       <div class="form-group">
-        <label for="businessName">Nama Bisnis / Toko</label>
-        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+        <label for="searchInput">Ketik Nama Bisnis / Toko Anda</label>
+        <input type="text" id="searchInput" placeholder="Contoh: Alun alun cimahi, Kopi Kenangan..." autocomplete="off" />
+        <div class="dropdown-results" id="dropdownResults"></div>
       </div>
+    </div>
 
+    <div id="sectionManual" style="display: none;">
       <div class="form-group">
-        <label for="reviewUrl">Link Google Maps / Review / Place ID</label>
-        <input type="text" id="reviewUrl" placeholder="https://maps.app.goo.gl/... atau Place ID" required autocomplete="off" />
+        <label for="manualName">Nama Toko</label>
+        <input type="text" id="manualName" placeholder="Contoh: Kopi Kenangan Senopati" autocomplete="off" />
       </div>
-
-      <div class="helper-card">
-        <b>💡 Cara Ambil Link Google Review:</b>
-        <ol class="helper-steps">
-          <li>Buka <b>Google Maps</b> dan cari lokasi bisnis Anda.</li>
-          <li>Klik tombol <b>Bagikan (Share)</b> lalu pilih <b>Salin Link</b>.</li>
-          <li>Atau buka <b>Google Profil Bisnis</b> Anda &rarr; klik <b>Minta Ulasan</b> &rarr; salin link.</li>
-        </ol>
+      <div class="form-group">
+        <label for="manualUrl">Link Google Maps / Review / Place ID</label>
+        <input type="text" id="manualUrl" placeholder="https://maps.app.goo.gl/... atau Place ID" autocomplete="off" />
       </div>
+    </div>
 
-      <div class="preview-box" id="previewBox">
-        <div class="preview-title">
-          <span>✓</span> Link Review Terverifikasi
-        </div>
-        <div class="preview-url" id="previewUrlText"></div>
-        <a href="#" target="_blank" class="btn-test" id="btnTest">
-          🔗 Uji Coba Buka Link di Tab Baru
-        </a>
+    <div class="selected-card" id="selectedCard">
+      <div class="selected-header">
+        <span class="selected-badge">✓ Toko Terpilih</span>
+        <button type="button" class="btn-change" onclick="resetSelection()">Ganti Toko</button>
       </div>
+      <div class="selected-title" id="selectedName">Nama Toko</div>
+      <div class="selected-sub" id="selectedAddress">Alamat Toko</div>
+      <a href="#" target="_blank" class="btn-test" id="btnTestLink">
+        🔗 Uji Coba Buka Link di Tab Baru
+      </a>
+    </div>
 
-      <button type="button" class="btn-submit" id="btnOpenModal">
-        🔒 Simpan & Kunci Kartu Ini
-      </button>
+    <button type="button" class="btn-submit" id="btnOpenModal">
+      🔒 Simpan & Kunci Kartu Ini
+    </button>
 
-      <div class="warning-lock">
-        <span>⚠️</span> Pengaturan ini permanen & terkunci otomatis setelah disimpan.
-      </div>
-    </form>
+    <div class="warning-lock">
+      <span>⚠️</span> Pengaturan ini permanen & terkunci otomatis setelah disimpan.
+    </div>
   </div>
 
   <div class="modal-overlay" id="confirmModal">
@@ -411,8 +140,8 @@ const SETUP_HTML = `<!DOCTYPE html>
       <div class="modal-icon">🔒</div>
       <h3>Kunci Kartu Permanen?</h3>
       <p>
-        Setelah disimpan, kartu NFC ini akan <b>langsung terkunci secara permanen</b>.
-        Setiap kali customer men-scan/tap kartu ini, mereka akan langsung diarahkan ke halaman review toko Anda.
+        Kartu NFC ini akan <b>langsung terkunci secara permanen</b> untuk toko Anda.
+        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review toko Anda.
       </p>
       <div class="modal-actions">
         <button class="btn-cancel" id="btnCancelModal">Batal</button>
@@ -423,52 +152,136 @@ const SETUP_HTML = `<!DOCTYPE html>
 
   <script>
     const TAG_ID = "{{TAG_ID}}";
-    const nameInput = document.getElementById('businessName');
-    const urlInput = document.getElementById('reviewUrl');
-    const previewBox = document.getElementById('previewBox');
-    const previewUrlText = document.getElementById('previewUrlText');
-    const btnTest = document.getElementById('btnTest');
+    let activeTab = 'auto';
+    let selectedData = { name: '', url: '' };
+
+    const searchInput = document.getElementById('searchInput');
+    const dropdownResults = document.getElementById('dropdownResults');
+    const selectedCard = document.getElementById('selectedCard');
+    const selectedName = document.getElementById('selectedName');
+    const selectedAddress = document.getElementById('selectedAddress');
+    const btnTestLink = document.getElementById('btnTestLink');
+
+    const manualName = document.getElementById('manualName');
+    const manualUrl = document.getElementById('manualUrl');
+
     const btnOpenModal = document.getElementById('btnOpenModal');
     const confirmModal = document.getElementById('confirmModal');
     const btnCancelModal = document.getElementById('btnCancelModal');
     const btnConfirmLock = document.getElementById('btnConfirmLock');
 
-    let normalizedUrl = '';
-
-    function checkInputs() {
-      const rawUrl = urlInput.value.trim();
-      if (!rawUrl) {
-        previewBox.classList.remove('active');
-        normalizedUrl = '';
-        return;
-      }
-
-      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(rawUrl)) {
-        normalizedUrl = 'https://search.google.com/local/writereview?placeid=' + rawUrl;
-      } else if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-        normalizedUrl = rawUrl;
-      } else {
-        normalizedUrl = 'https://www.google.com/search?q=' + encodeURIComponent(rawUrl) + '+reviews';
-      }
-
-      previewUrlText.textContent = normalizedUrl;
-      btnTest.href = normalizedUrl;
-      previewBox.classList.add('active');
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('tabAuto').classList.toggle('active', tab === 'auto');
+      document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
+      document.getElementById('sectionAuto').style.display = tab === 'auto' ? 'block' : 'none';
+      document.getElementById('sectionManual').style.display = tab === 'manual' ? 'block' : 'none';
     }
 
-    urlInput.addEventListener('input', checkInputs);
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = searchInput.value.trim();
+      if (q.length < 2) {
+        dropdownResults.classList.remove('open');
+        dropdownResults.innerHTML = '';
+        return;
+      }
+
+      dropdownResults.innerHTML = '<div class="loading-hint">Mencari lokasi di Google...</div>';
+      dropdownResults.classList.add('open');
+
+      searchTimer = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/places/search?q=' + encodeURIComponent(q));
+          const data = await res.json();
+          renderResults(data.results || []);
+        } catch (e) {
+          dropdownResults.innerHTML = '<div class="loading-hint">Gagal mencari. Silakan gunakan tab Paste Link Manual.</div>';
+        }
+      }, 350);
+    });
+
+    function renderResults(results) {
+      if (!results || results.length === 0) {
+        dropdownResults.innerHTML = '<div class="loading-hint">Toko tidak ditemukan. Coba ketik lebih spesifik atau gunakan tab Paste Link Manual.</div>';
+        return;
+      }
+
+      let html = '';
+      results.forEach((item, idx) => {
+        html += '<div class="result-item" onclick="chooseStore(' + idx + ')">' +
+          '<div class="result-name">🏬 ' + item.name + '</div>' +
+          '<div class="result-address">' + (item.address || 'Indonesia') + '</div>' +
+          '</div>';
+      });
+      dropdownResults.innerHTML = html;
+      window.__SEARCH_RESULTS__ = results;
+    }
+
+    function chooseStore(idx) {
+      const item = window.__SEARCH_RESULTS__[idx];
+      if (!item) return;
+
+      selectedData = {
+        name: item.name,
+        url: item.directReviewUrl || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.name + ' ' + (item.address || '')))
+      };
+
+      selectedName.textContent = item.name;
+      selectedAddress.textContent = item.address || 'Lokasi Terverifikasi';
+      btnTestLink.href = selectedData.url;
+      selectedCard.classList.add('active');
+      dropdownResults.classList.remove('open');
+      searchInput.value = item.name;
+    }
+
+    function resetSelection() {
+      selectedData = { name: '', url: '' };
+      selectedCard.classList.remove('active');
+      searchInput.value = '';
+      searchInput.focus();
+    }
+
+    manualUrl.addEventListener('input', () => {
+      const u = manualUrl.value.trim();
+      const n = manualName.value.trim() || 'Toko Anda';
+      if (u) {
+        selectedData = { name: n, url: u };
+        selectedName.textContent = n;
+        selectedAddress.textContent = u;
+        btnTestLink.href = u;
+        selectedCard.classList.add('active');
+      }
+    });
 
     btnOpenModal.addEventListener('click', () => {
-      if (!nameInput.value.trim()) {
-        alert('Mohon isi nama bisnis / toko Anda terlebih dahulu.');
-        nameInput.focus();
-        return;
+      let finalName = '';
+      let finalUrl = '';
+
+      if (activeTab === 'auto') {
+        if (!selectedData.url) {
+          alert('Silakan ketik nama toko Anda dan pilih dari daftar hasil pencarian.');
+          searchInput.focus();
+          return;
+        }
+        finalName = selectedData.name;
+        finalUrl = selectedData.url;
+      } else {
+        if (!manualName.value.trim()) {
+          alert('Mohon isi nama toko Anda.');
+          manualName.focus();
+          return;
+        }
+        if (!manualUrl.value.trim()) {
+          alert('Mohon isi link Google Maps toko Anda.');
+          manualUrl.focus();
+          return;
+        }
+        finalName = manualName.value.trim();
+        finalUrl = manualUrl.value.trim();
       }
-      if (!urlInput.value.trim()) {
-        alert('Mohon masukkan Link Google Maps / Review atau Place ID toko Anda.');
-        urlInput.focus();
-        return;
-      }
+
       confirmModal.classList.add('open');
     });
 
@@ -480,11 +293,14 @@ const SETUP_HTML = `<!DOCTYPE html>
       btnConfirmLock.disabled = true;
       btnConfirmLock.textContent = 'Menyimpan...';
 
+      const finalName = activeTab === 'auto' ? selectedData.name : manualName.value.trim();
+      const finalUrl = activeTab === 'auto' ? selectedData.url : manualUrl.value.trim();
+
       try {
         const payload = {
           tagId: TAG_ID,
-          businessName: nameInput.value.trim(),
-          reviewUrl: urlInput.value.trim()
+          businessName: finalName,
+          reviewUrl: finalUrl
         };
 
         const res = await fetch('/api/claim', {
@@ -531,129 +347,27 @@ const SUCCESS_HTML = `<!DOCTYPE html>
       --radius: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    body {
-      background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f0fdf4 100%);
-      color: #334155;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 16px;
-      text-align: center;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 440px;
-      background: #fff;
-      border-radius: var(--radius);
-      box-shadow: 0 20px 40px -15px rgba(22, 101, 52, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
-      padding: 36px 24px;
-    }
-
-    .success-icon {
-      width: 72px;
-      height: 72px;
-      background: #dcfce7;
-      color: var(--google-green);
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 34px;
-      margin-bottom: 20px;
-      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--dark);
-      margin-bottom: 8px;
-    }
-
-    p.desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-
-    .info-card {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: left;
-      margin-bottom: 24px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-
-    .info-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .info-label {
-      color: var(--text-muted);
-    }
-
-    .info-value {
-      font-weight: 700;
-      color: var(--dark);
-      max-width: 60%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .btn-test-now {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      background: var(--primary);
-      color: #fff;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 14px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
-    }
-
-    .notice {
-      margin-top: 18px;
-      font-size: 12px;
-      color: #94a3b8;
-      line-height: 1.4;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f0fdf4 100%); color: #334155; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; text-align: center; }
+    .container { width: 100%; max-width: 440px; background: #fff; border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(22, 101, 52, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 36px 24px; }
+    .success-icon { width: 72px; height: 72px; background: #dcfce7; color: var(--google-green); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    h1 { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    p.desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
+    .info-card { background: #f8fafc; border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 24px; border: 1px solid #e2e8f0; }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-label { color: var(--text-muted); }
+    .info-value { font-weight: 700; color: var(--dark); max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-test-now { display: block; width: 100%; padding: 15px; background: var(--primary); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
+    .notice { margin-top: 18px; font-size: 12px; color: #94a3b8; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="success-icon">✓</div>
     <h1>Kartu Berhasil Diaktifkan!</h1>
-    <p class="desc">
-      Kartu NFC & QR Review ini sekarang <b>terkunci permanen</b> untuk bisnis Anda.
-    </p>
-
+    <p class="desc">Kartu NFC & QR Review ini sekarang <b>terkunci permanen</b> untuk bisnis Anda.</p>
     <div class="info-card">
       <div class="info-row">
         <span class="info-label">Nama Bisnis:</span>
@@ -668,14 +382,8 @@ const SUCCESS_HTML = `<!DOCTYPE html>
         <span class="info-value" style="color: #16a34a;">● Aktif & Terkunci</span>
       </div>
     </div>
-
-    <a href="{{TARGET_URL}}" class="btn-test-now">
-      🚀 Buka Halaman Review Sekarang
-    </a>
-
-    <p class="notice">
-      Mulai sekarang, setiap scan atau tap NFC oleh pelanggan akan langsung membuka halaman Google Review toko Anda.
-    </p>
+    <a href="{{TARGET_URL}}" class="btn-test-now">🚀 Buka Halaman Review Sekarang</a>
+    <p class="notice">Mulai sekarang, setiap scan atau tap NFC oleh pelanggan akan langsung membuka halaman Google Review toko Anda.</p>
   </div>
 </body>
 </html>`;
@@ -842,7 +550,41 @@ export default {
       });
     }
 
-    // 2. Tag Route: /t/:tagId
+    // 2. Place Search Autocomplete API: GET /api/places/search?q=...
+    if (path === '/api/places/search') {
+      const q = url.searchParams.get('q') || '';
+      if (!q || q.length < 2) {
+        return Response.json({ results: [] });
+      }
+
+      try {
+        // Query Photon OSM search proxy for fast global & Indonesian POIs
+        const searchUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
+        const res = await fetch(searchUrl, {
+          headers: { 'User-Agent': 'QRReviewPlatform/1.0' }
+        });
+        const data = await res.json();
+
+        const results = (data.features || []).map(f => {
+          const p = f.properties || {};
+          const name = p.name || q;
+          const parts = [p.street, p.district, p.city || p.county, p.state, p.country].filter(Boolean);
+          const address = parts.join(', ');
+          const queryParam = encodeURIComponent(`${name} ${address}`);
+          return {
+            name,
+            address,
+            directReviewUrl: `https://www.google.com/maps/search/?api=1&query=${queryParam}`
+          };
+        });
+
+        return Response.json({ results });
+      } catch (err) {
+        return Response.json({ results: [] });
+      }
+    }
+
+    // 3. Tag Route: /t/:tagId
     if (path.startsWith('/t/')) {
       const rawTagId = path.substring(3);
       const tagId = sanitizeTagId(rawTagId);
@@ -875,7 +617,6 @@ export default {
 
       // If already configured and locked -> Instant Edge HTTP 302 Redirect to Google Review!
       if (tagData && tagData.isLocked && tagData.targetUrl) {
-        // Asynchronously update tap count in background without delaying user redirect
         if (ctx && ctx.waitUntil && env.REVIEW_TAGS) {
           ctx.waitUntil(
             (async () => {
@@ -900,7 +641,7 @@ export default {
       });
     }
 
-    // 3. API Route: POST /api/claim
+    // 4. API Route: POST /api/claim
     if (path === '/api/claim' && request.method === 'POST') {
       try {
         const body = await request.json();

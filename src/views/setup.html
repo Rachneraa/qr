@@ -15,7 +15,7 @@
       --google-yellow: #fbbc04;
       --google-red: #ea4335;
       --google-green: #34a853;
-      --dark: #1e293b;
+      --dark: #0f172a;
       --text: #334155;
       --text-muted: #64748b;
       --bg: #f8fafc;
@@ -45,7 +45,7 @@
 
     .container {
       width: 100%;
-      max-width: 440px;
+      max-width: 460px;
       background: var(--card);
       border-radius: var(--radius);
       box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -95,16 +95,16 @@
 
     .header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .google-stars {
       display: flex;
       justify-content: center;
       gap: 4px;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--google-yellow);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     h1 {
@@ -112,7 +112,7 @@
       font-weight: 800;
       color: var(--dark);
       line-height: 1.3;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     p.subtitle {
@@ -121,9 +121,39 @@
       line-height: 1.5;
     }
 
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
     .form-group {
       margin-bottom: 18px;
       text-align: left;
+      position: relative;
     }
 
     label {
@@ -132,12 +162,6 @@
       font-weight: 700;
       color: var(--dark);
       margin-bottom: 8px;
-    }
-
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
     }
 
     input[type="text"] {
@@ -158,74 +182,140 @@
       box-shadow: 0 0 0 4px var(--primary-light);
     }
 
-    .helper-card {
-      background: #f8fafc;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 20px;
-      font-size: 12.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .helper-card b {
-      color: var(--dark);
-    }
-
-    .helper-steps {
-      margin-top: 8px;
-      padding-left: 18px;
-    }
-
-    .helper-steps li {
-      margin-bottom: 4px;
-    }
-
-    .preview-box {
+    /* Autocomplete Dropdown */
+    .dropdown-results {
       display: none;
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1.5px solid var(--border);
       border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 20px;
-      text-align: left;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+      margin-top: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 100;
     }
 
-    .preview-box.active {
+    .dropdown-results.open {
       display: block;
     }
 
-    .preview-title {
-      font-size: 12px;
+    .result-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-item:hover, .result-item:active {
+      background: var(--primary-light);
+    }
+
+    .result-name {
       font-weight: 700;
-      color: #166534;
-      margin-bottom: 4px;
+      font-size: 13.5px;
+      color: var(--dark);
+      margin-bottom: 2px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .preview-url {
-      font-size: 12px;
+    .result-address {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .loading-hint {
+      padding: 12px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Selected Box */
+    .selected-card {
+      display: none;
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      text-align: left;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .selected-card.active {
+      display: block;
+    }
+
+    .selected-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .selected-badge {
+      background: #dcfce7;
       color: #15803d;
-      word-break: break-all;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-change {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .selected-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 2px;
+    }
+
+    .selected-sub {
+      font-size: 12px;
+      color: #475569;
       line-height: 1.4;
+      margin-bottom: 8px;
     }
 
     .btn-test {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 8px;
       font-size: 12px;
       font-weight: 700;
       color: var(--primary);
       text-decoration: none;
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
       background: rgba(26, 115, 232, 0.08);
-      cursor: pointer;
     }
 
     .btn-submit {
@@ -271,10 +361,7 @@
     /* Modal Konfirmasi */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
       display: flex;
@@ -372,58 +459,67 @@
         ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
       </div>
       <div class="google-stars">★★★★★</div>
-      <h1>Aktivasi Kartu Google Review</h1>
-      <p class="subtitle">Hubungkan kartu NFC / Stand QR ini dengan halaman Google Review bisnis Anda.</p>
+      <h1>Aktivasi Google Review</h1>
+      <p class="subtitle">Cari nama toko Anda atau masukkan link Google Maps untuk mengaktifkan kartu ini.</p>
     </div>
 
-    <form id="setupForm">
+    <!-- Mode Tabs -->
+    <div class="tab-bar">
+      <button type="button" class="tab-btn active" id="tabAuto" onclick="switchTab('auto')">🔍 Cari Nama Toko</button>
+      <button type="button" class="tab-btn" id="tabManual" onclick="switchTab('manual')">🔗 Paste Link Manual</button>
+    </div>
+
+    <!-- TAB 1: AUTO SEARCH -->
+    <div id="sectionAuto">
       <div class="form-group">
-        <label for="businessName">Nama Bisnis / Toko</label>
-        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+        <label for="searchInput">Ketik Nama Bisnis / Toko Anda</label>
+        <input type="text" id="searchInput" placeholder="Contoh: Alun alun cimahi, Kopi Kenangan..." autocomplete="off" />
+        <div class="dropdown-results" id="dropdownResults"></div>
       </div>
+    </div>
 
+    <!-- TAB 2: MANUAL PASTE -->
+    <div id="sectionManual" style="display: none;">
       <div class="form-group">
-        <label for="reviewUrl">Link Google Maps / Review / Place ID</label>
-        <input type="text" id="reviewUrl" placeholder="https://maps.app.goo.gl/... atau Place ID" required autocomplete="off" />
+        <label for="manualName">Nama Toko</label>
+        <input type="text" id="manualName" placeholder="Contoh: Kopi Kenangan Senopati" autocomplete="off" />
       </div>
-
-      <div class="helper-card">
-        <b>💡 Cara Ambil Link Google Review:</b>
-        <ol class="helper-steps">
-          <li>Buka <b>Google Maps</b> dan cari lokasi bisnis Anda.</li>
-          <li>Klik tombol <b>Bagikan (Share)</b> lalu pilih <b>Salin Link</b>.</li>
-          <li>Atau buka <b>Google Profil Bisnis</b> Anda &rarr; klik <b>Minta Ulasan</b> &rarr; salin link.</li>
-        </ol>
+      <div class="form-group">
+        <label for="manualUrl">Link Google Maps / Review / Place ID</label>
+        <input type="text" id="manualUrl" placeholder="https://maps.app.goo.gl/... atau Place ID" autocomplete="off" />
       </div>
+    </div>
 
-      <div class="preview-box" id="previewBox">
-        <div class="preview-title">
-          <span>✓</span> Link Review Terverifikasi
-        </div>
-        <div class="preview-url" id="previewUrlText"></div>
-        <a href="#" target="_blank" class="btn-test" id="btnTest">
-          🔗 Uji Coba Buka Link di Tab Baru
-        </a>
+    <!-- SELECTED STORE PREVIEW CARD -->
+    <div class="selected-card" id="selectedCard">
+      <div class="selected-header">
+        <span class="selected-badge">✓ Toko Terpilih</span>
+        <button type="button" class="btn-change" onclick="resetSelection()">Ganti Toko</button>
       </div>
+      <div class="selected-title" id="selectedName">Nama Toko</div>
+      <div class="selected-sub" id="selectedAddress">Alamat Toko</div>
+      <a href="#" target="_blank" class="btn-test" id="btnTestLink">
+        🔗 Uji Coba Buka Link di Tab Baru
+      </a>
+    </div>
 
-      <button type="button" class="btn-submit" id="btnOpenModal">
-        🔒 Simpan & Kunci Kartu Ini
-      </button>
+    <button type="button" class="btn-submit" id="btnOpenModal">
+      🔒 Simpan & Kunci Kartu Ini
+    </button>
 
-      <div class="warning-lock">
-        <span>⚠️</span> Pengaturan ini permanen & terkunci otomatis setelah disimpan.
-      </div>
-    </form>
+    <div class="warning-lock">
+      <span>⚠️</span> Pengaturan ini permanen & terkunci otomatis setelah disimpan.
+    </div>
   </div>
 
-  <!-- Modal Konfirmasi Kunci Permanen -->
+  <!-- Modal Konfirmasi -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
       <div class="modal-icon">🔒</div>
       <h3>Kunci Kartu Permanen?</h3>
       <p>
-        Setelah disimpan, kartu NFC ini akan <b>langsung terkunci secara permanen</b>.
-        Setiap kali customer men-scan/tap kartu ini, mereka akan langsung diarahkan ke halaman review toko Anda.
+        Kartu NFC ini akan <b>langsung terkunci secara permanen</b> untuk toko Anda.
+        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review toko Anda.
       </p>
       <div class="modal-actions">
         <button class="btn-cancel" id="btnCancelModal">Batal</button>
@@ -434,58 +530,140 @@
 
   <script>
     const TAG_ID = "{{TAG_ID}}";
-    const nameInput = document.getElementById('businessName');
-    const urlInput = document.getElementById('reviewUrl');
-    const previewBox = document.getElementById('previewBox');
-    const previewUrlText = document.getElementById('previewUrlText');
-    const btnTest = document.getElementById('btnTest');
+    let activeTab = 'auto';
+    let selectedData = { name: '', url: '' };
+
+    const searchInput = document.getElementById('searchInput');
+    const dropdownResults = document.getElementById('dropdownResults');
+    const selectedCard = document.getElementById('selectedCard');
+    const selectedName = document.getElementById('selectedName');
+    const selectedAddress = document.getElementById('selectedAddress');
+    const btnTestLink = document.getElementById('btnTestLink');
+
+    const manualName = document.getElementById('manualName');
+    const manualUrl = document.getElementById('manualUrl');
+
     const btnOpenModal = document.getElementById('btnOpenModal');
     const confirmModal = document.getElementById('confirmModal');
     const btnCancelModal = document.getElementById('btnCancelModal');
     const btnConfirmLock = document.getElementById('btnConfirmLock');
 
-    let normalizedUrl = '';
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('tabAuto').classList.toggle('active', tab === 'auto');
+      document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
+      document.getElementById('sectionAuto').style.display = tab === 'auto' ? 'block' : 'none';
+      document.getElementById('sectionManual').style.display = tab === 'manual' ? 'block' : 'none';
+    }
 
-    function checkInputs() {
-      const rawUrl = urlInput.value.trim();
-      if (!rawUrl) {
-        previewBox.classList.remove('active');
-        normalizedUrl = '';
+    // Debounce search
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = searchInput.value.trim();
+      if (q.length < 2) {
+        dropdownResults.classList.remove('open');
+        dropdownResults.innerHTML = '';
         return;
       }
 
-      // Check Place ID or standard URL
-      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(rawUrl)) {
-        normalizedUrl = `https://search.google.com/local/writereview?placeid=${rawUrl}`;
-      } else if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-        normalizedUrl = rawUrl;
-      } else {
-        normalizedUrl = `https://www.google.com/search?q=${encodeURIComponent(rawUrl)}+reviews`;
+      dropdownResults.innerHTML = '<div class="loading-hint">Mencari lokasi di Google...</div>';
+      dropdownResults.classList.add('open');
+
+      searchTimer = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/places/search?q=' + encodeURIComponent(q));
+          const data = await res.json();
+          renderResults(data.results || []);
+        } catch (e) {
+          dropdownResults.innerHTML = '<div class="loading-hint">Gagal mencari. Silakan gunakan tab Paste Link Manual.</div>';
+        }
+      }, 350);
+    });
+
+    function renderResults(results) {
+      if (!results || results.length === 0) {
+        dropdownResults.innerHTML = '<div class="loading-hint">Toko tidak ditemukan. Coba ketik lebih spesifik atau gunakan tab Paste Link Manual.</div>';
+        return;
       }
 
-      previewUrlText.textContent = normalizedUrl;
-      btnTest.href = normalizedUrl;
-      previewBox.classList.add('active');
+      let html = '';
+      results.forEach((item, idx) => {
+        html += `
+          <div class="result-item" onclick="chooseStore(${idx})">
+            <div class="result-name">🏬 ${item.name}</div>
+            <div class="result-address">${item.address || 'Indonesia'}</div>
+          </div>
+        `;
+      });
+      dropdownResults.innerHTML = html;
+      window.__SEARCH_RESULTS__ = results;
     }
 
-    urlInput.addEventListener('input', checkInputs);
-    nameInput.addEventListener('input', () => {
-      if (!urlInput.value.trim() && nameInput.value.trim()) {
-        urlInput.placeholder = `Atau ketik nama: ${nameInput.value.trim()}`;
+    function chooseStore(idx) {
+      const item = window.__SEARCH_RESULTS__[idx];
+      if (!item) return;
+
+      selectedData = {
+        name: item.name,
+        url: item.directReviewUrl || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.name + ' ' + (item.address || '')))
+      };
+
+      selectedName.textContent = item.name;
+      selectedAddress.textContent = item.address || 'Lokasi Terverifikasi';
+      btnTestLink.href = selectedData.url;
+      selectedCard.classList.add('active');
+      dropdownResults.classList.remove('open');
+      searchInput.value = item.name;
+    }
+
+    function resetSelection() {
+      selectedData = { name: '', url: '' };
+      selectedCard.classList.remove('active');
+      searchInput.value = '';
+      searchInput.focus();
+    }
+
+    // Manual input test
+    manualUrl.addEventListener('input', () => {
+      const u = manualUrl.value.trim();
+      const n = manualName.value.trim() || 'Toko Anda';
+      if (u) {
+        selectedData = { name: n, url: u };
+        selectedName.textContent = n;
+        selectedAddress.textContent = u;
+        btnTestLink.href = u;
+        selectedCard.classList.add('active');
       }
     });
 
     btnOpenModal.addEventListener('click', () => {
-      if (!nameInput.value.trim()) {
-        alert('Mohon isi nama bisnis / toko Anda terlebih dahulu.');
-        nameInput.focus();
-        return;
+      let finalName = '';
+      let finalUrl = '';
+
+      if (activeTab === 'auto') {
+        if (!selectedData.url) {
+          alert('Silakan ketik nama toko Anda dan pilih dari daftar hasil pencarian.');
+          searchInput.focus();
+          return;
+        }
+        finalName = selectedData.name;
+        finalUrl = selectedData.url;
+      } else {
+        if (!manualName.value.trim()) {
+          alert('Mohon isi nama toko Anda.');
+          manualName.focus();
+          return;
+        }
+        if (!manualUrl.value.trim()) {
+          alert('Mohon isi link Google Maps toko Anda.');
+          manualUrl.focus();
+          return;
+        }
+        finalName = manualName.value.trim();
+        finalUrl = manualUrl.value.trim();
       }
-      if (!urlInput.value.trim()) {
-        alert('Mohon masukkan Link Google Maps / Review atau Place ID toko Anda.');
-        urlInput.focus();
-        return;
-      }
+
       confirmModal.classList.add('open');
     });
 
@@ -497,11 +675,14 @@
       btnConfirmLock.disabled = true;
       btnConfirmLock.textContent = 'Menyimpan...';
 
+      const finalName = activeTab === 'auto' ? selectedData.name : manualName.value.trim();
+      const finalUrl = activeTab === 'auto' ? selectedData.url : manualUrl.value.trim();
+
       try {
         const payload = {
           tagId: TAG_ID,
-          businessName: nameInput.value.trim(),
-          reviewUrl: urlInput.value.trim()
+          businessName: finalName,
+          reviewUrl: finalUrl
         };
 
         const res = await fetch('/api/claim', {
@@ -513,7 +694,7 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          window.location.href = `/t/${TAG_ID}?activated=true`;
+          window.location.href = '/t/' + TAG_ID + '?activated=true';
         } else {
           alert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
           btnConfirmLock.disabled = false;
