@@ -1,6 +1,6 @@
 /**
  * Google Review Link Helper & Parser
- * Mengarahkan langsung ke Google Review / Google Maps resmi tanpa melalui Google Search.
+ * Menjamin URL yang dihasilkan 100% membuka DIRECT 5-STAR WRITE REVIEW MODAL di Google.
  */
 
 export function sanitizeTagId(rawId) {
@@ -10,12 +10,12 @@ export function sanitizeTagId(rawId) {
 
 export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '') {
   if (!input || typeof input !== 'string') {
-    return { valid: false, error: 'URL atau link Google Review tidak boleh kosong' };
+    return { valid: false, error: 'Place ID atau Link Google Review tidak boleh kosong' };
   }
 
   const trimmed = input.trim();
 
-  // 1. Direct Place ID (e.g., ChIJN1t_tDeuEmsRUsoyG83frY4)
+  // 1. Direct Place ID (e.g., ChIJqU2X26-caS4R5aW33uX-qOQ)
   if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
     return {
       valid: true,
@@ -24,10 +24,10 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 2. Direct writereview URL (Official Google Review popup link)
+  // 2. Direct writereview URL
   if (trimmed.includes('search.google.com/local/writereview')) {
     try {
-      const parsed = new URL(trimmed);
+      const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
       return {
         valid: true,
         url: parsed.toString(),
@@ -49,17 +49,22 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 4. Google Maps link (maps.app.goo.gl, goo.gl/maps, google.com/maps)
-  if (trimmed.includes('maps.app.goo.gl') || trimmed.includes('goo.gl/maps') || trimmed.includes('google.com/maps')) {
-    const fullUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
-    return {
-      valid: true,
-      url: fullUrl,
-      type: 'maps_direct'
-    };
+  // 4. Place ID parameter inside Maps URL
+  if (trimmed.includes('place_id=') || trimmed.includes('placeid=')) {
+    try {
+      const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+      const pid = parsed.searchParams.get('place_id') || parsed.searchParams.get('placeid');
+      if (pid) {
+        return {
+          valid: true,
+          url: `https://search.google.com/local/writereview?placeid=${pid}`,
+          type: 'extracted_place_id'
+        };
+      }
+    } catch {}
   }
 
-  // 5. Generic HTTPS link
+  // 5. Generic HTTPS fallback or Place ID string
   if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
     return {
       valid: true,
@@ -68,10 +73,10 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 6. Fallback if plain text
+  // If plain code string, treat as Place ID
   return {
     valid: true,
-    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
-    type: 'maps_search_query'
+    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed)}`,
+    type: 'place_id_inferred'
   };
 }

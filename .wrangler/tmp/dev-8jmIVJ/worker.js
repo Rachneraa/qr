@@ -51,7 +51,7 @@ function sanitizeTagId(rawId) {
 __name(sanitizeTagId, "sanitizeTagId");
 async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   if (!input || typeof input !== "string") {
-    return { valid: false, error: "URL atau link Google Review tidak boleh kosong" };
+    return { valid: false, error: "Place ID atau Link Google Review tidak boleh kosong" };
   }
   const trimmed = input.trim();
   if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
@@ -63,7 +63,7 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   }
   if (trimmed.includes("search.google.com/local/writereview")) {
     try {
-      const parsed = new URL(trimmed);
+      const parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
       return {
         valid: true,
         url: parsed.toString(),
@@ -82,13 +82,19 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       type: "gpage_review"
     };
   }
-  if (trimmed.includes("maps.app.goo.gl") || trimmed.includes("goo.gl/maps") || trimmed.includes("google.com/maps")) {
-    const fullUrl = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
-    return {
-      valid: true,
-      url: fullUrl,
-      type: "maps_direct"
-    };
+  if (trimmed.includes("place_id=") || trimmed.includes("placeid=")) {
+    try {
+      const parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+      const pid = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
+      if (pid) {
+        return {
+          valid: true,
+          url: `https://search.google.com/local/writereview?placeid=${pid}`,
+          type: "extracted_place_id"
+        };
+      }
+    } catch {
+    }
   }
   if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
     return {
@@ -99,8 +105,8 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   }
   return {
     valid: true,
-    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
-    type: "maps_search_query"
+    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed)}`,
+    type: "place_id_inferred"
   };
 }
 __name(parseAndNormalizeGoogleReviewUrl, "parseAndNormalizeGoogleReviewUrl");
@@ -143,34 +149,27 @@ var SETUP_HTML = `<!DOCTYPE html>
     .google-stars { display: flex; justify-content: center; gap: 4px; font-size: 24px; color: var(--google-yellow); margin-bottom: 8px; }
     h1 { font-size: 22px; font-weight: 800; color: var(--dark); line-height: 1.3; margin-bottom: 6px; }
     p.subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
-    .tab-bar { display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px; gap: 4px; }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; }
-    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-    .form-group { margin-bottom: 18px; text-align: left; position: relative; }
+
+    .form-group { margin-bottom: 18px; text-align: left; }
     label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
     input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; }
     input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
-    .dropdown-results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); margin-top: 6px; max-height: 220px; overflow-y: auto; z-index: 100; }
-    .dropdown-results.open { display: block; }
-    .result-item { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; text-align: left; transition: background 0.15s; }
-    .result-item:last-child { border-bottom: none; }
-    .result-item:hover, .result-item:active { background: var(--primary-light); }
-    .result-name { font-weight: 700; font-size: 13.5px; color: var(--dark); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-    .result-address { font-size: 11.5px; color: var(--text-muted); line-height: 1.3; }
-    .loading-hint { padding: 12px; font-size: 12.5px; color: var(--text-muted); text-align: center; }
-    .selected-card { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; animation: fadeIn 0.2s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-    .selected-card.active { display: block; }
-    .selected-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .selected-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-change { font-size: 11.5px; font-weight: 700; color: var(--primary); background: none; border: none; cursor: pointer; }
-    .selected-title { font-size: 14px; font-weight: 800; color: var(--dark); margin-bottom: 2px; }
-    .selected-sub { font-size: 12px; color: #475569; line-height: 1.4; margin-bottom: 8px; }
+
+    .helper-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+    .helper-box b { color: var(--dark); }
+    .btn-find-placeid { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 12px; background: #fff; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); font-size: 12px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .btn-find-placeid:hover { background: var(--primary-light); }
+    .preview-box { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; }
+    .preview-box.active { display: block; }
+    .preview-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .preview-url { font-size: 12px; color: #166534; font-family: monospace; word-break: break-all; margin-bottom: 8px; }
     .btn-test { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 6px 10px; border-radius: 8px; background: rgba(26, 115, 232, 0.08); }
+
     .btn-submit { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #ffffff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35); }
     .btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 999; opacity: 0; visibility: hidden; transition: all 0.2s ease; }
     .modal-overlay.open { opacity: 1; visibility: visible; }
     .modal-box { background: #fff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
@@ -191,53 +190,48 @@ var SETUP_HTML = `<!DOCTYPE html>
         ID KARTU: <span id="tagDisplay">{{TAG_ID}}</span>
       </div>
       <div class="google-stars">\u2605\u2605\u2605\u2605\u2605</div>
-      <h1>Aktivasi Google Review</h1>
-      <p class="subtitle">Cari nama toko Anda atau masukkan link Google Maps untuk mengaktifkan kartu ini.</p>
+      <h1>Aktivasi Stand Google Review</h1>
+      <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
     </div>
 
-    <div class="tab-bar">
-      <button type="button" class="tab-btn active" id="tabAuto" onclick="switchTab('auto')">\u{1F50D} Cari Nama Toko</button>
-      <button type="button" class="tab-btn" id="tabManual" onclick="switchTab('manual')">\u{1F517} Paste Link Manual</button>
-    </div>
-
-    <div id="sectionAuto">
+    <form id="setupForm" onsubmit="return false;">
       <div class="form-group">
-        <label for="searchInput">Ketik Nama Bisnis / Toko Anda</label>
-        <input type="text" id="searchInput" placeholder="Contoh: Alun alun cimahi, Kopi Kenangan..." autocomplete="off" />
-        <div class="dropdown-results" id="dropdownResults"></div>
+        <label for="businessName">1. Nama Toko / Bisnis</label>
+        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
       </div>
-    </div>
 
-    <div id="sectionManual" style="display: none;">
       <div class="form-group">
-        <label for="manualName">Nama Toko</label>
-        <input type="text" id="manualName" placeholder="Contoh: Kopi Kenangan Senopati" autocomplete="off" />
+        <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
+        <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
       </div>
-      <div class="form-group">
-        <label for="manualUrl">Link Google Maps / Review / Place ID</label>
-        <input type="text" id="manualUrl" placeholder="https://maps.app.goo.gl/... atau Place ID" autocomplete="off" />
+
+      <div class="helper-box">
+        <b>\u{1F4A1} 2 Cara Cepat Mendapatkan Place ID Toko:</b>
+        <div style="margin-top: 6px;">
+          1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
+          2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
+        </div>
+        <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
+          \u{1F50D} Buka Pencari Place ID Google (Gratis)
+        </a>
       </div>
-    </div>
 
-    <div class="selected-card" id="selectedCard">
-      <div class="selected-header">
-        <span class="selected-badge">\u2713 Toko Terpilih</span>
-        <button type="button" class="btn-change" onclick="resetSelection()">Ganti Toko</button>
+      <div class="preview-box" id="previewBox">
+        <span class="preview-badge">\u2713 Target Direct 5-Star Review Siap</span>
+        <div class="preview-url" id="previewUrlText"></div>
+        <a href="#" target="_blank" class="btn-test" id="btnTestLink">
+          \u{1F440} Uji Coba Buka Pop-up Bintang 5 di Tab Baru
+        </a>
       </div>
-      <div class="selected-title" id="selectedName">Nama Toko</div>
-      <div class="selected-sub" id="selectedAddress">Alamat Toko</div>
-      <a href="#" target="_blank" class="btn-test" id="btnTestLink">
-        \u{1F517} Uji Coba Buka Link di Tab Baru
-      </a>
-    </div>
 
-    <button type="button" class="btn-submit" id="btnOpenModal">
-      \u{1F512} Simpan & Kunci Kartu Ini
-    </button>
+      <button type="button" class="btn-submit" id="btnOpenModal">
+        \u{1F512} Simpan & Kunci Kartu Ini
+      </button>
 
-    <div class="warning-lock">
-      <span>\u26A0\uFE0F</span> Pengaturan ini permanen & terkunci otomatis setelah disimpan.
-    </div>
+      <div class="warning-lock">
+        <span>\u26A0\uFE0F</span> Kartu ini akan terkunci permanen untuk toko Anda.
+      </div>
+    </form>
   </div>
 
   <div class="modal-overlay" id="confirmModal">
@@ -245,8 +239,8 @@ var SETUP_HTML = `<!DOCTYPE html>
       <div class="modal-icon">\u{1F512}</div>
       <h3>Kunci Kartu Permanen?</h3>
       <p>
-        Kartu NFC ini akan <b>langsung terkunci secara permanen</b> untuk toko Anda.
-        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review toko Anda.
+        Setelah disimpan, kartu NFC ini akan <b>langsung terkunci secara permanen</b>.
+        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review bintang 5 toko Anda.
       </p>
       <div class="modal-actions">
         <button class="btn-cancel" id="btnCancelModal">Batal</button>
@@ -257,136 +251,55 @@ var SETUP_HTML = `<!DOCTYPE html>
 
   <script>
     const TAG_ID = "{{TAG_ID}}";
-    let activeTab = 'auto';
-    let selectedData = { name: '', url: '' };
-
-    const searchInput = document.getElementById('searchInput');
-    const dropdownResults = document.getElementById('dropdownResults');
-    const selectedCard = document.getElementById('selectedCard');
-    const selectedName = document.getElementById('selectedName');
-    const selectedAddress = document.getElementById('selectedAddress');
+    const nameInput = document.getElementById('businessName');
+    const inputField = document.getElementById('placeIdInput');
+    const previewBox = document.getElementById('previewBox');
+    const previewUrlText = document.getElementById('previewUrlText');
     const btnTestLink = document.getElementById('btnTestLink');
-
-    const manualName = document.getElementById('manualName');
-    const manualUrl = document.getElementById('manualUrl');
 
     const btnOpenModal = document.getElementById('btnOpenModal');
     const confirmModal = document.getElementById('confirmModal');
     const btnCancelModal = document.getElementById('btnCancelModal');
     const btnConfirmLock = document.getElementById('btnConfirmLock');
 
-    function switchTab(tab) {
-      activeTab = tab;
-      document.getElementById('tabAuto').classList.toggle('active', tab === 'auto');
-      document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
-      document.getElementById('sectionAuto').style.display = tab === 'auto' ? 'block' : 'none';
-      document.getElementById('sectionManual').style.display = tab === 'manual' ? 'block' : 'none';
-    }
+    let finalDirectUrl = '';
 
-    let searchTimer = null;
-    searchInput.addEventListener('input', () => {
-      clearTimeout(searchTimer);
-      const q = searchInput.value.trim();
-      if (q.length < 2) {
-        dropdownResults.classList.remove('open');
-        dropdownResults.innerHTML = '';
+    function computeReviewUrl() {
+      const raw = inputField.value.trim();
+      if (!raw) {
+        previewBox.classList.remove('active');
+        finalDirectUrl = '';
         return;
       }
 
-      dropdownResults.innerHTML = '<div class="loading-hint">Mencari lokasi di Google...</div>';
-      dropdownResults.classList.add('open');
-
-      searchTimer = setTimeout(async () => {
-        try {
-          const res = await fetch('/api/places/search?q=' + encodeURIComponent(q));
-          const data = await res.json();
-          renderResults(data.results || []);
-        } catch (e) {
-          dropdownResults.innerHTML = '<div class="loading-hint">Gagal mencari. Silakan gunakan tab Paste Link Manual.</div>';
-        }
-      }, 350);
-    });
-
-    function renderResults(results) {
-      if (!results || results.length === 0) {
-        dropdownResults.innerHTML = '<div class="loading-hint">Toko tidak ditemukan. Coba ketik lebih spesifik atau gunakan tab Paste Link Manual.</div>';
-        return;
+      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(raw)) {
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + raw;
+      } else if (raw.includes('search.google.com/local/writereview')) {
+        finalDirectUrl = raw;
+      } else if (raw.includes('g.page/')) {
+        finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
+      } else {
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(raw);
       }
 
-      let html = '';
-      results.forEach((item, idx) => {
-        html += '<div class="result-item" onclick="chooseStore(' + idx + ')">' +
-          '<div class="result-name">\u{1F3EC} ' + item.name + '</div>' +
-          '<div class="result-address">' + (item.address || 'Indonesia') + '</div>' +
-          '</div>';
-      });
-      dropdownResults.innerHTML = html;
-      window.__SEARCH_RESULTS__ = results;
+      previewUrlText.textContent = finalDirectUrl;
+      btnTestLink.href = finalDirectUrl;
+      previewBox.classList.add('active');
     }
 
-    function chooseStore(idx) {
-      const item = window.__SEARCH_RESULTS__[idx];
-      if (!item) return;
-
-      selectedData = {
-        name: item.name,
-        url: item.directReviewUrl || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.name + ' ' + (item.address || '')))
-      };
-
-      selectedName.textContent = item.name;
-      selectedAddress.textContent = item.address || 'Lokasi Terverifikasi';
-      btnTestLink.href = selectedData.url;
-      selectedCard.classList.add('active');
-      dropdownResults.classList.remove('open');
-      searchInput.value = item.name;
-    }
-
-    function resetSelection() {
-      selectedData = { name: '', url: '' };
-      selectedCard.classList.remove('active');
-      searchInput.value = '';
-      searchInput.focus();
-    }
-
-    manualUrl.addEventListener('input', () => {
-      const u = manualUrl.value.trim();
-      const n = manualName.value.trim() || 'Toko Anda';
-      if (u) {
-        selectedData = { name: n, url: u };
-        selectedName.textContent = n;
-        selectedAddress.textContent = u;
-        btnTestLink.href = u;
-        selectedCard.classList.add('active');
-      }
-    });
+    inputField.addEventListener('input', computeReviewUrl);
 
     btnOpenModal.addEventListener('click', () => {
-      let finalName = '';
-      let finalUrl = '';
-
-      if (activeTab === 'auto') {
-        if (!selectedData.url) {
-          alert('Silakan ketik nama toko Anda dan pilih dari daftar hasil pencarian.');
-          searchInput.focus();
-          return;
-        }
-        finalName = selectedData.name;
-        finalUrl = selectedData.url;
-      } else {
-        if (!manualName.value.trim()) {
-          alert('Mohon isi nama toko Anda.');
-          manualName.focus();
-          return;
-        }
-        if (!manualUrl.value.trim()) {
-          alert('Mohon isi link Google Maps toko Anda.');
-          manualUrl.focus();
-          return;
-        }
-        finalName = manualName.value.trim();
-        finalUrl = manualUrl.value.trim();
+      if (!nameInput.value.trim()) {
+        alert('Mohon isi nama toko Anda.');
+        nameInput.focus();
+        return;
       }
-
+      if (!inputField.value.trim()) {
+        alert('Mohon isi Place ID atau Link Ulasan resmi toko Anda.');
+        inputField.focus();
+        return;
+      }
       confirmModal.classList.add('open');
     });
 
@@ -398,14 +311,11 @@ var SETUP_HTML = `<!DOCTYPE html>
       btnConfirmLock.disabled = true;
       btnConfirmLock.textContent = 'Menyimpan...';
 
-      const finalName = activeTab === 'auto' ? selectedData.name : manualName.value.trim();
-      const finalUrl = activeTab === 'auto' ? selectedData.url : manualUrl.value.trim();
-
       try {
         const payload = {
           tagId: TAG_ID,
-          businessName: finalName,
-          reviewUrl: finalUrl
+          businessName: nameInput.value.trim(),
+          reviewUrl: inputField.value.trim()
         };
 
         const res = await fetch('/api/claim', {
