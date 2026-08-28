@@ -49,33 +49,6 @@ function sanitizeTagId(rawId) {
   return rawId.trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
 }
 __name(sanitizeTagId, "sanitizeTagId");
-function ftidToPlaceId(ftid) {
-  if (!ftid || typeof ftid !== "string")
-    return null;
-  const parts = ftid.trim().split(":");
-  if (parts.length !== 2)
-    return null;
-  try {
-    const f1 = BigInt(parts[0]);
-    const f2 = BigInt(parts[1]);
-    const buf = new Uint8Array(18);
-    const view = new DataView(buf.buffer);
-    buf[0] = 9;
-    view.setBigUint64(1, f1, true);
-    buf[9] = 17;
-    view.setBigUint64(10, f2, true);
-    let binary = "";
-    for (let i = 0; i < buf.byteLength; i++) {
-      binary += String.fromCharCode(buf[i]);
-    }
-    const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    return "ChIJ" + base64.substring(1);
-  } catch (err) {
-    console.error("FTID conversion error:", err);
-    return null;
-  }
-}
-__name(ftidToPlaceId, "ftidToPlaceId");
 async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   if (!input || typeof input !== "string") {
     return { valid: false, error: "Place ID atau Link Google Review tidak boleh kosong" };
@@ -89,17 +62,6 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       url: `https://search.google.com/local/writereview?placeid=${cleanPlaceId}`,
       type: "place_id"
     };
-  }
-  const ftidMatch = trimmed.match(/0x[0-9a-fA-F]+:0x[0-9a-fA-F]+/);
-  if (ftidMatch) {
-    const converted = ftidToPlaceId(ftidMatch[0]);
-    if (converted) {
-      return {
-        valid: true,
-        url: `https://search.google.com/local/writereview?placeid=${converted}`,
-        type: "ftid_converted"
-      };
-    }
   }
   if (trimmed.includes("search.google.com/local/writereview")) {
     try {
@@ -122,6 +84,14 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       type: "gpage_review"
     };
   }
+  if (trimmed.includes("maps.app.goo.gl") || trimmed.includes("goo.gl/maps") || trimmed.includes("google.com/maps")) {
+    const url = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+    return {
+      valid: true,
+      url,
+      type: "maps_direct"
+    };
+  }
   if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
     return {
       valid: true,
@@ -131,8 +101,8 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   }
   return {
     valid: true,
-    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed.split("\n")[0].trim())}`,
-    type: "inferred_place_id"
+    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
+    type: "query_search"
   };
 }
 __name(parseAndNormalizeGoogleReviewUrl, "parseAndNormalizeGoogleReviewUrl");
@@ -176,23 +146,10 @@ var SETUP_HTML = `<!DOCTYPE html>
     h1 { font-size: 22px; font-weight: 800; color: var(--dark); line-height: 1.3; margin-bottom: 6px; }
     p.subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
 
-    .form-group { margin-bottom: 18px; text-align: left; position: relative; }
+    .form-group { margin-bottom: 18px; text-align: left; }
     label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
     input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; }
     input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
-
-    .auto-status {
-      display: none;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--primary);
-      margin-top: 6px;
-      align-items: center;
-      gap: 6px;
-    }
-    .auto-status.active {
-      display: flex;
-    }
 
     .preview-box { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; }
     .preview-box.active { display: block; }
@@ -218,30 +175,27 @@ var SETUP_HTML = `<!DOCTYPE html>
       </div>
       <div class="google-stars">\u2605\u2605\u2605\u2605\u2605</div>
       <h1>Aktivasi Stand Google Review</h1>
-      <p class="subtitle">Paste link Google Maps toko Anda, sistem otomatis mengambil Place ID dan menguncinya ke form bintang 5.</p>
+      <p class="subtitle">Paste link Google Maps toko Anda untuk mengaktifkan kartu ini secara permanen.</p>
     </div>
 
     <div id="statusMsg" class="status-msg"></div>
 
     <form id="setupForm">
       <div class="form-group">
-        <label for="mapsLinkInput">\u{1F4CD} Link Google Maps Toko / Place ID</label>
-        <input type="text" id="mapsLinkInput" placeholder="Paste link maps.app.goo.gl/... atau Place ID" required autocomplete="off" />
-        <div class="auto-status" id="autoStatus">
-          <span>\u23F3</span> Mendeteksi Place ID & Nama Toko secara otomatis...
-        </div>
+        <label for="businessName">1. Nama Toko / Bisnis</label>
+        <input type="text" id="businessName" placeholder="Contoh: Alun alun cimahi" required autocomplete="off" />
       </div>
 
       <div class="form-group">
-        <label for="businessName">\u{1F3EC} Nama Toko / Bisnis (Otomatis)</label>
-        <input type="text" id="businessName" placeholder="Akan terisi otomatis setelah paste link" required autocomplete="off" />
+        <label for="mapsLinkInput">2. Link Google Maps / Place ID Toko</label>
+        <input type="text" id="mapsLinkInput" placeholder="Paste link https://maps.app.goo.gl/... atau Place ID" required autocomplete="off" />
       </div>
 
       <div class="preview-box" id="previewBox">
-        <span class="preview-badge">\u2713 Target Direct 5-Star Review Siap</span>
+        <span class="preview-badge" id="previewBadge">\u2713 Link Google Maps Terverifikasi</span>
         <div class="preview-url" id="previewUrlText"></div>
         <a href="#" target="_blank" class="btn-test" id="btnTestLink">
-          \u{1F440} Uji Coba Buka Pop-up Bintang 5 di Tab Baru
+          \u{1F440} Uji Coba Buka Link di Tab Baru
         </a>
       </div>
 
@@ -258,76 +212,61 @@ var SETUP_HTML = `<!DOCTYPE html>
   <script>
     const TAG_ID = "{{TAG_ID}}";
     const setupForm = document.getElementById('setupForm');
-    const mapsLinkInput = document.getElementById('mapsLinkInput');
     const nameInput = document.getElementById('businessName');
+    const mapsLinkInput = document.getElementById('mapsLinkInput');
     const previewBox = document.getElementById('previewBox');
+    const previewBadge = document.getElementById('previewBadge');
     const previewUrlText = document.getElementById('previewUrlText');
     const btnTestLink = document.getElementById('btnTestLink');
     const btnSubmit = document.getElementById('btnSubmit');
-    const autoStatus = document.getElementById('autoStatus');
     const statusMsg = document.getElementById('statusMsg');
 
-    let resolvedPlaceId = '';
-    let finalDirectUrl = '';
+    let targetLink = '';
 
-    let resolveTimer = null;
-    mapsLinkInput.addEventListener('input', () => {
-      clearTimeout(resolveTimer);
+    function computeUrl() {
       const raw = mapsLinkInput.value.trim();
       if (!raw) {
         previewBox.classList.remove('active');
-        autoStatus.classList.remove('active');
+        targetLink = '';
         return;
       }
 
-      const match = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
-      if (match) {
-        resolvedPlaceId = match[0];
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + resolvedPlaceId;
-        previewUrlText.textContent = finalDirectUrl;
-        btnTestLink.href = finalDirectUrl;
-        previewBox.classList.add('active');
-        autoStatus.classList.remove('active');
-        if (!nameInput.value.trim()) nameInput.value = 'Toko Anda';
-        return;
+      const placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      if (placeMatch) {
+        targetLink = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
+        previewBadge.textContent = '\u2713 Target Pop-up Bintang 5 Siap';
+      } else if (raw.includes('search.google.com/local/writereview')) {
+        targetLink = raw;
+        previewBadge.textContent = '\u2713 Target Pop-up Bintang 5 Siap';
+      } else if (raw.includes('g.page/')) {
+        targetLink = raw.startsWith('http') ? raw : 'https://' + raw;
+        previewBadge.textContent = '\u2713 Target Link Ulasan Resmi Google Bisnis';
+      } else {
+        targetLink = raw.startsWith('http') ? raw : 'https://' + raw;
+        previewBadge.textContent = '\u2713 Langsung Buka Profil & Review di Aplikasi Google Maps';
       }
 
-      if (raw.includes('maps.app.goo.gl') || raw.includes('goo.gl/maps') || raw.includes('google.com/maps')) {
-        autoStatus.classList.add('active');
-        resolveTimer = setTimeout(async () => {
-          try {
-            const res = await fetch('/api/resolve-maps', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ url: raw })
-            });
-            const data = await res.json();
-            if (data.success && data.placeId) {
-              resolvedPlaceId = data.placeId;
-              if (data.businessName && !nameInput.value.trim()) {
-                nameInput.value = data.businessName;
-              }
-              finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + data.placeId;
-              previewUrlText.textContent = finalDirectUrl;
-              btnTestLink.href = finalDirectUrl;
-              previewBox.classList.add('active');
-            }
-          } catch (e) {
-            console.warn('Auto resolve error:', e);
-          } finally {
-            autoStatus.classList.remove('active');
-          }
-        }, 300);
-      }
-    });
+      previewUrlText.textContent = targetLink;
+      btnTestLink.href = targetLink;
+      previewBox.classList.add('active');
+    }
+
+    mapsLinkInput.addEventListener('input', computeUrl);
 
     setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       statusMsg.className = 'status-msg';
       statusMsg.style.display = 'none';
 
-      const name = nameInput.value.trim() || 'Toko Anda';
+      const name = nameInput.value.trim();
       const inputVal = mapsLinkInput.value.trim();
+
+      if (!name) {
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = 'Mohon isi nama toko Anda.';
+        nameInput.focus();
+        return;
+      }
 
       if (!inputVal) {
         statusMsg.className = 'status-msg error';
@@ -343,7 +282,7 @@ var SETUP_HTML = `<!DOCTYPE html>
         const payload = {
           tagId: TAG_ID,
           businessName: name,
-          reviewUrl: resolvedPlaceId || inputVal
+          reviewUrl: inputVal
         };
 
         const res = await fetch('/api/claim', {

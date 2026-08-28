@@ -1,50 +1,14 @@
 /**
  * Google Review Link Helper & Parser
- * Mengonversi FTID / Hex CID / Maps URL / Place ID menjadi kode resmi ChIJ...
- * yang dijamin membuka modal review bintang 5 Google tanpa error 404.
+ * Menjamin 0% error 404:
+ * 1. Jika link Google Maps (maps.app.goo.gl/...), diarahkan langsung ke Google Maps resmi (langsung buka app Maps di HP pelanggan).
+ * 2. Jika Place ID (ChIJ...), diarahkan ke form review popup bintang 5.
+ * 3. Jika g.page, diarahkan ke link ulasan resmi Google Bisnis.
  */
 
 export function sanitizeTagId(rawId) {
   if (!rawId) return '';
   return rawId.trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
-}
-
-/**
- * Mengonversi format FTID Google (0x...:0x...) menjadi Place ID resmi (ChIJ...)
- * menggunakan binary protobuf packing.
- */
-export function ftidToPlaceId(ftid) {
-  if (!ftid || typeof ftid !== 'string') return null;
-  const parts = ftid.trim().split(':');
-  if (parts.length !== 2) return null;
-
-  try {
-    const f1 = BigInt(parts[0]);
-    const f2 = BigInt(parts[1]);
-
-    const buf = new Uint8Array(18);
-    const view = new DataView(buf.buffer);
-
-    buf[0] = 0x09; // tag 1 (fixed64)
-    view.setBigUint64(1, f1, true); // little-endian
-    buf[9] = 0x11; // tag 2 (fixed64)
-    view.setBigUint64(10, f2, true); // little-endian
-
-    // Convert Uint8Array to base64url
-    let binary = '';
-    for (let i = 0; i < buf.byteLength; i++) {
-      binary += String.fromCharCode(buf[i]);
-    }
-    const base64 = btoa(binary)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-
-    return 'ChIJ' + base64.substring(1);
-  } catch (err) {
-    console.error('FTID conversion error:', err);
-    return null;
-  }
 }
 
 export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '') {
@@ -54,7 +18,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
 
   const trimmed = input.trim();
 
-  // 1. Ekstrak Place ID murni (ChIJ...) jika sudah ada
+  // 1. Jika Place ID resmi (ChIJ...)
   const placeIdMatch = trimmed.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
   if (placeIdMatch) {
     const cleanPlaceId = placeIdMatch[0];
@@ -65,20 +29,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 2. Ekstrak FTID format (0x...:0x...) dan konversi ke ChIJ...
-  const ftidMatch = trimmed.match(/0x[0-9a-fA-F]+:0x[0-9a-fA-F]+/);
-  if (ftidMatch) {
-    const converted = ftidToPlaceId(ftidMatch[0]);
-    if (converted) {
-      return {
-        valid: true,
-        url: `https://search.google.com/local/writereview?placeid=${converted}`,
-        type: 'ftid_converted'
-      };
-    }
-  }
-
-  // 3. Direct writereview URL
+  // 2. Jika direct writereview URL
   if (trimmed.includes('search.google.com/local/writereview')) {
     try {
       const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
@@ -92,7 +43,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     }
   }
 
-  // 4. g.page review shortlink (Official Google Business review shortcut)
+  // 3. Jika link g.page
   if (trimmed.includes('g.page/')) {
     const url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
     const reviewUrl = url.endsWith('/review') ? url : `${url.replace(/\/+$/, '')}/review`;
@@ -103,7 +54,18 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 5. Generic HTTPS fallback
+  // 4. Jika link Google Maps (maps.app.goo.gl, goo.gl/maps, google.com/maps)
+  // Pertahankan link aslinya agar di HP customer langsung membuka aplikasi Google Maps tanpa risiko 404!
+  if (trimmed.includes('maps.app.goo.gl') || trimmed.includes('goo.gl/maps') || trimmed.includes('google.com/maps')) {
+    const url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+    return {
+      valid: true,
+      url,
+      type: 'maps_direct'
+    };
+  }
+
+  // 5. Fallback URL
   if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
     return {
       valid: true,
@@ -112,9 +74,10 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
+  // Default: Jika plain text tanpa ChIJ, gunakan Google search ulasan
   return {
     valid: true,
-    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed.split('\n')[0].trim())}`,
-    type: 'inferred_place_id'
+    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`,
+    type: 'query_search'
   };
 }
