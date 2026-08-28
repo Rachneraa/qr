@@ -161,14 +161,16 @@ const SETUP_HTML = `<!DOCTYPE html>
         return;
       }
 
-      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(raw)) {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + raw;
+      const placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      if (placeMatch) {
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
       } else if (raw.includes('search.google.com/local/writereview')) {
         finalDirectUrl = raw;
       } else if (raw.includes('g.page/')) {
         finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
       } else {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(raw);
+        const firstLine = raw.split('\n')[0].trim();
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
       }
 
       previewUrlText.textContent = finalDirectUrl;

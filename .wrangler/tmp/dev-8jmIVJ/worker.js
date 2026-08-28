@@ -54,10 +54,12 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
     return { valid: false, error: "Place ID atau Link Google Review tidak boleh kosong" };
   }
   const trimmed = input.trim();
-  if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
+  const placeIdMatch = trimmed.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+  if (placeIdMatch) {
+    const cleanPlaceId = placeIdMatch[0];
     return {
       valid: true,
-      url: `https://search.google.com/local/writereview?placeid=${trimmed}`,
+      url: `https://search.google.com/local/writereview?placeid=${cleanPlaceId}`,
       type: "place_id"
     };
   }
@@ -82,20 +84,6 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
       type: "gpage_review"
     };
   }
-  if (trimmed.includes("place_id=") || trimmed.includes("placeid=")) {
-    try {
-      const parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
-      const pid = parsed.searchParams.get("place_id") || parsed.searchParams.get("placeid");
-      if (pid) {
-        return {
-          valid: true,
-          url: `https://search.google.com/local/writereview?placeid=${pid}`,
-          type: "extracted_place_id"
-        };
-      }
-    } catch {
-    }
-  }
   if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
     return {
       valid: true,
@@ -105,8 +93,8 @@ async function parseAndNormalizeGoogleReviewUrl(input, businessName = "") {
   }
   return {
     valid: true,
-    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed)}`,
-    type: "place_id_inferred"
+    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed.split("\n")[0].trim())}`,
+    type: "inferred_place_id"
   };
 }
 __name(parseAndNormalizeGoogleReviewUrl, "parseAndNormalizeGoogleReviewUrl");
@@ -272,14 +260,17 @@ var SETUP_HTML = `<!DOCTYPE html>
         return;
       }
 
-      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(raw)) {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + raw;
+      const placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      if (placeMatch) {
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
       } else if (raw.includes('search.google.com/local/writereview')) {
         finalDirectUrl = raw;
       } else if (raw.includes('g.page/')) {
         finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
       } else {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(raw);
+        const firstLine = raw.split('
+')[0].trim();
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
       }
 
       previewUrlText.textContent = finalDirectUrl;

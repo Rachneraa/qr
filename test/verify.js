@@ -8,10 +8,11 @@ const cleanTag = sanitizeTagId('REV-001@#$*&!');
 console.assert(cleanTag === 'REV-001', `Sanitizer failed: got ${cleanTag}`);
 console.log('✅ Sanitizer passed: REV-001');
 
-// 2. Test Place ID Parser
-const placeIdRes = await parseAndNormalizeGoogleReviewUrl('ChIJN1t_tDeuEmsRUsoyG83frY4');
-console.assert(placeIdRes.valid && placeIdRes.type === 'place_id', 'Place ID parse failed');
-console.log('✅ Place ID parser passed:', placeIdRes.url);
+// 2. Test Place ID Parser with accidental address text
+const dirtyInput = `ChIJFzH8KgDlaC4RNnbJva8buGs\n4GGR+JV7, Jl.Raya Barat, Cimahi, Kec. Cimahi Tengah, Kota Cimahi`;
+const placeIdRes = await parseAndNormalizeGoogleReviewUrl(dirtyInput);
+console.assert(placeIdRes.valid && placeIdRes.url === 'https://search.google.com/local/writereview?placeid=ChIJFzH8KgDlaC4RNnbJva8buGs', 'Place ID parse failed on dirty input');
+console.log('✅ Clean Place ID successfully extracted from dirty input:', placeIdRes.url);
 
 // 3. Test Maps URL Parser
 const mapsRes = await parseAndNormalizeGoogleReviewUrl('https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic', 'Alun alun cimahi');

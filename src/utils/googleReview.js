@@ -1,6 +1,7 @@
 /**
  * Google Review Link Helper & Parser
- * Menjamin URL yang dihasilkan 100% membuka DIRECT 5-STAR WRITE REVIEW MODAL di Google.
+ * Otomatis membersihkan input (jika ada alamat yang ikut tersalin)
+ * dan mengambil kode Place ID murni (ChIJ...).
  */
 
 export function sanitizeTagId(rawId) {
@@ -15,11 +16,13 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
 
   const trimmed = input.trim();
 
-  // 1. Direct Place ID (e.g., ChIJqU2X26-caS4R5aW33uX-qOQ)
-  if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
+  // 1. Ekstrak Place ID murni (ChIJ...) meskipun ada alamat/teks lain yang ikut tersalin
+  const placeIdMatch = trimmed.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+  if (placeIdMatch) {
+    const cleanPlaceId = placeIdMatch[0];
     return {
       valid: true,
-      url: `https://search.google.com/local/writereview?placeid=${trimmed}`,
+      url: `https://search.google.com/local/writereview?placeid=${cleanPlaceId}`,
       type: 'place_id'
     };
   }
@@ -49,22 +52,7 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // 4. Place ID parameter inside Maps URL
-  if (trimmed.includes('place_id=') || trimmed.includes('placeid=')) {
-    try {
-      const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
-      const pid = parsed.searchParams.get('place_id') || parsed.searchParams.get('placeid');
-      if (pid) {
-        return {
-          valid: true,
-          url: `https://search.google.com/local/writereview?placeid=${pid}`,
-          type: 'extracted_place_id'
-        };
-      }
-    } catch {}
-  }
-
-  // 5. Generic HTTPS fallback or Place ID string
+  // 4. Generic HTTPS link
   if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
     return {
       valid: true,
@@ -73,10 +61,9 @@ export async function parseAndNormalizeGoogleReviewUrl(input, businessName = '')
     };
   }
 
-  // If plain code string, treat as Place ID
   return {
     valid: true,
-    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed)}`,
-    type: 'place_id_inferred'
+    url: `https://search.google.com/local/writereview?placeid=${encodeURIComponent(trimmed.split('\n')[0].trim())}`,
+    type: 'inferred_place_id'
   };
 }
