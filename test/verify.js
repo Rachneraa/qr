@@ -39,7 +39,7 @@ async function testWorkerFlow() {
   const req1 = new Request('https://domain.com/t/TEST-100');
   const res1 = await worker.fetch(req1, mockEnv);
   const html1 = await res1.text();
-  console.assert(html1.includes('Aktivasi Kartu Google Review'), 'First visit did not render setup page');
+  console.assert(html1.includes('Aktivasi Stand Google Review'), 'First visit did not render setup page');
   console.log('✅ First visit rendered setup page properly');
 
   // B. Claim API - lock card

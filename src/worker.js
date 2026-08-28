@@ -6,7 +6,7 @@ const SETUP_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Aktivasi Kartu Google Review</title>
+  <title>Aktivasi Stand Google Review</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -59,16 +59,8 @@ const SETUP_HTML = `<!DOCTYPE html>
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 999; opacity: 0; visibility: hidden; transition: all 0.2s ease; }
-    .modal-overlay.open { opacity: 1; visibility: visible; }
-    .modal-box { background: #fff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
-    .modal-overlay.open .modal-box { transform: scale(1); }
-    .modal-icon { width: 52px; height: 52px; border-radius: 50%; background: #fef2f2; color: var(--google-red); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; }
-    .modal-box h3 { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
-    .modal-box p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
-    .modal-actions { display: flex; gap: 10px; }
-    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; }
-    .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; border: none; background: var(--google-red); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .status-msg { display: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; text-align: center; }
+    .status-msg.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
   </style>
 </head>
 <body>
@@ -83,10 +75,12 @@ const SETUP_HTML = `<!DOCTYPE html>
       <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
     </div>
 
-    <form id="setupForm" onsubmit="return false;">
+    <div id="statusMsg" class="status-msg"></div>
+
+    <form id="setupForm">
       <div class="form-group">
         <label for="businessName">1. Nama Toko / Bisnis</label>
-        <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" required autocomplete="off" />
+        <input type="text" id="businessName" placeholder="Contoh: Alun alun cimahi" required autocomplete="off" />
       </div>
 
       <div class="form-group">
@@ -113,7 +107,7 @@ const SETUP_HTML = `<!DOCTYPE html>
         </a>
       </div>
 
-      <button type="button" class="btn-submit" id="btnOpenModal">
+      <button type="submit" class="btn-submit" id="btnSubmit">
         🔒 Simpan & Kunci Kartu Ini
       </button>
 
@@ -123,33 +117,16 @@ const SETUP_HTML = `<!DOCTYPE html>
     </form>
   </div>
 
-  <div class="modal-overlay" id="confirmModal">
-    <div class="modal-box">
-      <div class="modal-icon">🔒</div>
-      <h3>Kunci Kartu Permanen?</h3>
-      <p>
-        Setelah disimpan, kartu NFC ini akan <b>langsung terkunci secara permanen</b>.
-        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review bintang 5 toko Anda.
-      </p>
-      <div class="modal-actions">
-        <button class="btn-cancel" id="btnCancelModal">Batal</button>
-        <button class="btn-confirm" id="btnConfirmLock">Ya, Kunci Sekarang</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     const TAG_ID = "{{TAG_ID}}";
+    const setupForm = document.getElementById('setupForm');
     const nameInput = document.getElementById('businessName');
     const inputField = document.getElementById('placeIdInput');
     const previewBox = document.getElementById('previewBox');
     const previewUrlText = document.getElementById('previewUrlText');
     const btnTestLink = document.getElementById('btnTestLink');
-
-    const btnOpenModal = document.getElementById('btnOpenModal');
-    const confirmModal = document.getElementById('confirmModal');
-    const btnCancelModal = document.getElementById('btnCancelModal');
-    const btnConfirmLock = document.getElementById('btnConfirmLock');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const statusMsg = document.getElementById('statusMsg');
 
     let finalDirectUrl = '';
 
@@ -169,7 +146,7 @@ const SETUP_HTML = `<!DOCTYPE html>
       } else if (raw.includes('g.page/')) {
         finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
       } else {
-        const firstLine = raw.split('\n')[0].trim();
+        const firstLine = raw.split('\\n')[0].trim();
         finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
       }
 
@@ -180,33 +157,36 @@ const SETUP_HTML = `<!DOCTYPE html>
 
     inputField.addEventListener('input', computeReviewUrl);
 
-    btnOpenModal.addEventListener('click', () => {
-      if (!nameInput.value.trim()) {
-        alert('Mohon isi nama toko Anda.');
+    setupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.className = 'status-msg';
+      statusMsg.style.display = 'none';
+
+      const name = nameInput.value.trim();
+      const placeIdVal = inputField.value.trim();
+
+      if (!name) {
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = 'Mohon isi nama toko Anda.';
         nameInput.focus();
         return;
       }
-      if (!inputField.value.trim()) {
-        alert('Mohon isi Place ID atau Link Ulasan resmi toko Anda.');
+
+      if (!placeIdVal) {
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = 'Mohon isi Place ID atau Link Ulasan resmi toko Anda.';
         inputField.focus();
         return;
       }
-      confirmModal.classList.add('open');
-    });
 
-    btnCancelModal.addEventListener('click', () => {
-      confirmModal.classList.remove('open');
-    });
-
-    btnConfirmLock.addEventListener('click', async () => {
-      btnConfirmLock.disabled = true;
-      btnConfirmLock.textContent = 'Menyimpan...';
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = '⏳ Menyimpan & Mengunci...';
 
       try {
         const payload = {
           tagId: TAG_ID,
-          businessName: nameInput.value.trim(),
-          reviewUrl: inputField.value.trim()
+          businessName: name,
+          reviewUrl: placeIdVal
         };
 
         const res = await fetch('/api/claim', {
@@ -220,15 +200,16 @@ const SETUP_HTML = `<!DOCTYPE html>
         if (res.ok && data.success) {
           window.location.href = '/t/' + TAG_ID + '?activated=true';
         } else {
-          alert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
-          btnConfirmLock.disabled = false;
-          btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
-          confirmModal.classList.remove('open');
+          statusMsg.className = 'status-msg error';
+          statusMsg.textContent = data.error || 'Terjadi kesalahan saat mengunci kartu.';
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
         }
       } catch (err) {
-        alert('Gagal terhubung ke server: ' + err.message);
-        btnConfirmLock.disabled = false;
-        btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = 'Gagal terhubung ke server: ' + err.message;
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
       }
     });
   </script>
