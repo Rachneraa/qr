@@ -14,7 +14,6 @@ const SETUP_HTML = `<!DOCTYPE html>
     :root {
       --primary: #1a73e8;
       --primary-hover: #1557b0;
-      --primary-light: #e8f0fe;
       --google-yellow: #fbbc04;
       --google-red: #ea4335;
       --google-green: #34a853;
@@ -27,51 +26,58 @@ const SETUP_HTML = `<!DOCTYPE html>
       --radius: 18px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background: radial-gradient(120% 120% at 50% 0%, #ffffff 0%, #f1f5f9 100%); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
-    .container { width: 100%; max-width: 460px; background: var(--card); border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 28px 24px; position: relative; overflow: hidden; }
+    .container { width: 100%; max-width: 440px; background: var(--card); border-radius: var(--radius); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04); padding: 28px 22px; position: relative; overflow: hidden; }
     .container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #4285f4 0%, #ea4335 25%, #fbbc05 50%, #34a853 75%, #4285f4 100%); }
-    .badge-tag { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 16px; }
-    .badge-tag span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--google-green); display: inline-block; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+    
+    .badge-tag { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; }
+    .badge-tag span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--google-green); }
+    
     .header { text-align: center; margin-bottom: 20px; }
-    .google-stars { display: flex; justify-content: center; gap: 4px; font-size: 24px; color: var(--google-yellow); margin-bottom: 8px; }
-    h1 { font-size: 22px; font-weight: 800; color: var(--dark); line-height: 1.3; margin-bottom: 6px; }
-    p.subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+    .google-stars { color: var(--google-yellow); font-size: 22px; margin-bottom: 6px; letter-spacing: 2px; }
+    h1 { font-size: 21px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+    p.subtitle { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
 
-    .alert-banner { display: none; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; text-align: left; }
-    .alert-banner.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    input[type="text"] { width: 100%; padding: 14px 14px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); outline: none; background: #fff; }
+    input[type="text"]:focus { border-color: var(--primary); }
 
-    .form-group { margin-bottom: 18px; text-align: left; }
-    label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
-    input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; -webkit-appearance: none; }
-    input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
+    .helper-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+    .btn-find-placeid { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 6px 10px; background: #fff; border: 1px solid var(--primary); border-radius: 6px; color: var(--primary); font-size: 11.5px; font-weight: 700; text-decoration: none; }
 
-    .helper-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
-    .helper-box b { color: var(--dark); }
-    .btn-find-placeid { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 12px; background: #fff; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); font-size: 12px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
-    .btn-find-placeid:hover { background: var(--primary-light); }
-    .preview-box { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; }
+    .preview-box { display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: left; }
     .preview-box.active { display: block; }
-    .preview-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px; }
-    .preview-url { font-size: 12px; color: #166534; font-family: monospace; word-break: break-all; margin-bottom: 8px; }
-    .btn-test { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 6px 10px; border-radius: 8px; background: rgba(26, 115, 232, 0.08); }
+    .preview-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 100px; margin-bottom: 4px; display: inline-block; }
+    .preview-url { font-size: 11.5px; color: #166534; font-family: monospace; word-break: break-all; margin-bottom: 6px; }
+    .btn-test { font-size: 11.5px; font-weight: 700; color: var(--primary); text-decoration: none; }
 
-    .btn-submit { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #ffffff; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35); user-select: none; -webkit-user-select: none; }
-    .btn-submit:active { background: #0d47a1; transform: scale(0.98); }
-    .btn-submit.loading { background: #64748b; pointer-events: none; }
-    .warning-lock { margin-top: 14px; font-size: 11.5px; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-submit { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; }
+    .btn-submit:active { background: var(--primary-hover); }
 
-    /* Success State */
-    .success-view { display: none; text-align: center; }
-    .success-view.active { display: block; }
-    .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
-    .btn-test-now { display: block; width: 100%; background: var(--primary); color: #fff; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 15px; margin-top: 20px; }
+    /* Modal Styles */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; width: 100%; max-width: 360px; border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .modal-icon { width: 50px; height: 50px; border-radius: 50%; background: #fef2f2; color: var(--google-red); display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
+    .modal-box h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: var(--dark); }
+    .modal-box p { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 18px; }
+    .modal-actions { display: flex; gap: 8px; }
+    .btn-modal { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; border: none; }
+    .btn-modal-cancel { background: #f1f5f9; color: var(--text); }
+    .btn-modal-confirm { background: var(--primary); color: #fff; }
+
+    /* Success Card */
+    .success-card { display: none; text-align: center; }
+    .success-card.active { display: block; }
+    .success-icon { width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: var(--google-green); display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 14px; }
+    .btn-open-review { display: block; width: 100%; background: var(--primary); color: #fff; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14.5px; margin-top: 18px; }
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
-    <div id="setupView">
+  <div class="container">
+    <div id="mainForm">
       <div class="header">
         <div class="badge-tag">
           <span class="dot"></span>
@@ -79,179 +85,170 @@ const SETUP_HTML = `<!DOCTYPE html>
         </div>
         <div class="google-stars">★★★★★</div>
         <h1>Aktivasi Stand Google Review</h1>
-        <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
+        <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up rating 5 bintang Google.</p>
       </div>
 
-      <div id="alertBanner" class="alert-banner"></div>
+      <div class="form-group">
+        <label>1. Nama Toko / Bisnis</label>
+        <input type="text" id="storeName" placeholder="Contoh: Alun alun cimahi" />
+      </div>
 
-      <div class="setup-form">
-        <div class="form-group">
-          <label for="businessName">1. Nama Toko / Bisnis</label>
-          <input type="text" id="businessName" placeholder="Contoh: Kopi Kenangan Senopati" autocomplete="off" />
-        </div>
+      <div class="form-group">
+        <label>2. Google Place ID / Link Review</label>
+        <input type="text" id="storePlaceId" placeholder="ChIJ... atau link review" />
+      </div>
 
-        <div class="form-group">
-          <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
-          <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" autocomplete="off" />
-        </div>
-
-        <div class="helper-box">
-          <b>💡 2 Cara Cepat Mendapatkan Place ID Toko:</b>
-          <div style="margin-top: 6px;">
-            1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
-            2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
-          </div>
+      <div class="helper-box">
+        <b>💡 Cari Kode Place ID Toko:</b><br>
+        Buka pencari resmi Google, ketik nama toko, lalu salin kodenya.
+        <div>
           <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
             🔍 Buka Pencari Place ID Google (Gratis)
           </a>
         </div>
-
-        <div class="preview-box" id="previewBox">
-          <span class="preview-badge">✓ Target Direct 5-Star Review Siap</span>
-          <div class="preview-url" id="previewUrlText"></div>
-          <a href="#" target="_blank" class="btn-test" id="btnTestLink">
-            👀 Uji Coba Buka Pop-up Bintang 5 di Tab Baru
-          </a>
-        </div>
-
-        <button type="button" class="btn-submit" id="btnSubmit" onclick="handleSave()">
-          🔒 Simpan & Kunci Kartu Ini
-        </button>
-
-        <div class="warning-lock">
-          <span>⚠️</span> Kartu ini akan terkunci permanen untuk toko Anda setelah disimpan.
-        </div>
       </div>
+
+      <div class="preview-box" id="previewBox">
+        <span class="preview-badge">✓ Link Review 5-Bintang Siap</span>
+        <div class="preview-url" id="previewUrlText"></div>
+        <a href="#" target="_blank" class="btn-test" id="btnTestLink">👀 Uji Coba Buka Link di Tab Baru</a>
+      </div>
+
+      <button type="button" class="btn-submit" id="btnTriggerModal">
+        🔒 Simpan & Kunci Kartu Ini
+      </button>
     </div>
 
-    <div id="successView" class="success-view">
+    <div id="successCard" class="success-card">
       <div class="success-icon">✓</div>
-      <h1 style="color: #15803d; margin-bottom: 8px;">Kartu Berhasil Diaktifkan!</h1>
-      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-        Stand review untuk <b id="successBusinessName" style="color: #0f172a;"></b> telah resmi terkunci & siap digunakan.
+      <h1 style="color: #15803d; margin-bottom: 6px; font-size: 20px;">Kartu Berhasil Diaktifkan!</h1>
+      <p style="color: #64748b; font-size: 13.5px;">
+        Stand ulasan untuk <b id="displayStoreName" style="color: #0f172a;"></b> sekarang terkunci & siap digunakan.
       </p>
-      <a href="#" id="successReviewBtn" target="_blank" class="btn-test-now">
+      <a href="#" id="linkDirectReview" target="_blank" class="btn-open-review">
         🚀 Buka Form Bintang 5 Sekarang
       </a>
-      <p style="font-size: 12px; color: #94a3b8; margin-top: 14px;">
-        Setiap kali customer men-scan/tap kartu ini, mereka langsung diarahkan ke form review di atas.
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-icon">🔒</div>
+      <h3>Kunci Kartu Permanen?</h3>
+      <p>
+        Setelah disimpan, kartu ini akan langsung <b>terkunci permanen</b> untuk toko Anda.
       </p>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal btn-modal-cancel" id="btnCancelModal">Batal</button>
+        <button type="button" class="btn-modal btn-modal-confirm" id="btnConfirmLock">Ya, Kunci Sekarang</button>
+      </div>
     </div>
   </div>
 
   <script>
     var TAG_ID = "{{TAG_ID}}";
-    var setupView = document.getElementById('setupView');
-    var successView = document.getElementById('successView');
-    var nameInput = document.getElementById('businessName');
-    var inputField = document.getElementById('placeIdInput');
+    var mainForm = document.getElementById('mainForm');
+    var successCard = document.getElementById('successCard');
+    var storeNameInput = document.getElementById('storeName');
+    var storePlaceIdInput = document.getElementById('storePlaceId');
     var previewBox = document.getElementById('previewBox');
     var previewUrlText = document.getElementById('previewUrlText');
     var btnTestLink = document.getElementById('btnTestLink');
-    var btnSubmit = document.getElementById('btnSubmit');
-    var alertBanner = document.getElementById('alertBanner');
 
-    var finalDirectUrl = '';
+    var btnTriggerModal = document.getElementById('btnTriggerModal');
+    var confirmModal = document.getElementById('confirmModal');
+    var btnCancelModal = document.getElementById('btnCancelModal');
+    var btnConfirmLock = document.getElementById('btnConfirmLock');
 
-    function computeReviewUrl() {
-      var raw = (inputField.value || '').trim();
+    var generatedReviewUrl = '';
+
+    function updatePreview() {
+      var raw = (storePlaceIdInput.value || '').trim();
       if (!raw) {
         previewBox.classList.remove('active');
-        finalDirectUrl = '';
+        generatedReviewUrl = '';
         return;
       }
 
-      var placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
-      if (placeMatch) {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
+      var match = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      if (match) {
+        generatedReviewUrl = 'https://search.google.com/local/writereview?placeid=' + match[0];
       } else if (raw.indexOf('search.google.com/local/writereview') !== -1) {
-        finalDirectUrl = raw;
+        generatedReviewUrl = raw;
       } else if (raw.indexOf('g.page/') !== -1) {
-        finalDirectUrl = (raw.indexOf('http') === 0) ? raw : 'https://' + raw;
+        generatedReviewUrl = (raw.indexOf('http') === 0) ? raw : 'https://' + raw;
       } else {
         var firstLine = raw.split('\n')[0].trim();
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
+        generatedReviewUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
       }
 
-      previewUrlText.textContent = finalDirectUrl;
-      btnTestLink.href = finalDirectUrl;
+      previewUrlText.textContent = generatedReviewUrl;
+      btnTestLink.href = generatedReviewUrl;
       previewBox.classList.add('active');
     }
 
-    inputField.addEventListener('input', computeReviewUrl);
-    inputField.addEventListener('keyup', computeReviewUrl);
-    inputField.addEventListener('change', computeReviewUrl);
+    storePlaceIdInput.oninput = updatePreview;
 
-    function showAlert(msg) {
-      alertBanner.textContent = msg;
-      alertBanner.className = 'alert-banner error';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function clearAlert() {
-      alertBanner.textContent = '';
-      alertBanner.className = 'alert-banner';
-    }
-
-    async function handleSave() {
-      clearAlert();
-
-      var name = (nameInput.value || '').trim();
-      var placeId = (inputField.value || '').trim();
+    btnTriggerModal.onclick = function() {
+      var name = (storeNameInput.value || '').trim();
+      var placeId = (storePlaceIdInput.value || '').trim();
 
       if (!name) {
-        showAlert('Mohon isi nama toko Anda.');
-        nameInput.focus();
+        alert('Mohon isi nama toko Anda.');
+        storeNameInput.focus();
         return;
       }
-
       if (!placeId) {
-        showAlert('Mohon isi Place ID atau Link Ulasan resmi toko Anda.');
-        inputField.focus();
+        alert('Mohon isi Place ID atau Link Ulasan toko Anda.');
+        storePlaceIdInput.focus();
         return;
       }
 
-      btnSubmit.className = 'btn-submit loading';
-      btnSubmit.textContent = '⏳ Sedang Mengunci Kartu...';
+      confirmModal.className = 'modal-overlay open';
+    };
 
-      try {
-        var payload = {
+    btnCancelModal.onclick = function() {
+      confirmModal.className = 'modal-overlay';
+    };
+
+    btnConfirmLock.onclick = function() {
+      btnConfirmLock.disabled = true;
+      btnConfirmLock.textContent = 'Menyimpan...';
+
+      var name = (storeNameInput.value || '').trim();
+      var placeId = (storePlaceIdInput.value || '').trim();
+
+      fetch('/api/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           tagId: TAG_ID,
           businessName: name,
           reviewUrl: placeId
-        };
-
-        var res = await fetch('/api/claim', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        var data = await res.json();
-
-        if (res.ok && data.success) {
-          setupView.style.display = 'none';
-          document.getElementById('successBusinessName').textContent = name;
-          document.getElementById('successReviewBtn').href = data.targetUrl || finalDirectUrl;
-          successView.classList.add('active');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        confirmModal.className = 'modal-overlay';
+        if (data && data.success) {
+          mainForm.style.display = 'none';
+          document.getElementById('displayStoreName').textContent = name;
+          document.getElementById('linkDirectReview').href = data.targetUrl || generatedReviewUrl;
+          successCard.className = 'success-card active';
         } else {
-          showAlert(data.error || 'Terjadi kesalahan saat mengunci kartu.');
-          btnSubmit.className = 'btn-submit';
-          btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
+          alert((data && data.error) || 'Gagal mengunci kartu.');
+          btnConfirmLock.disabled = false;
+          btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
         }
-      } catch (err) {
-        showAlert('Gagal terhubung ke server: ' + err.message);
-        btnSubmit.className = 'btn-submit';
-        btnSubmit.textContent = '🔒 Simpan & Kunci Kartu Ini';
-      }
-    }
-
-    btnSubmit.addEventListener('click', handleSave);
-    btnSubmit.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handleSave();
-    });
+      })
+      .catch(function(err) {
+        alert('Terjadi kesalahan: ' + err.message);
+        btnConfirmLock.disabled = false;
+        btnConfirmLock.textContent = 'Ya, Kunci Sekarang';
+        confirmModal.className = 'modal-overlay';
+      });
+    };
   </script>
 </body>
 </html>`;
