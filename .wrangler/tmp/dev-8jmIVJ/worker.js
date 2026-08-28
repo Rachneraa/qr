@@ -357,431 +357,146 @@ var GENERATOR_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batch QR Stand Generator - Google Style</title>
+  <title>Batch QR & NFC Stand Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     :root {
       --primary: #1a73e8;
-      --google-red: #ea4335;
-      --google-yellow: #fbbc04;
-      --google-green: #34a853;
-      --google-blue: #4285f4;
       --dark: #0f172a;
+      --card-bg: #ffffff;
       --border: #e2e8f0;
+      --google-yellow: #fbbc04;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: #f1f5f9; color: #1e293b; padding: 24px 16px; min-height: 100vh; }
-    .container { max-width: 1100px; margin: 0 auto; }
-    
-    .control-panel {
-      background: #ffffff;
-      padding: 24px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
-      margin-bottom: 24px;
-    }
-    h1 { font-size: 22px; font-weight: 900; color: var(--dark); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-    p.subtitle { color: #64748b; font-size: 13.5px; margin-bottom: 20px; }
-    
-    .grid-inputs {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1.5px solid var(--border);
-      font-size: 13.5px;
-      outline: none;
-      background: #fff;
-    }
-    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
-
-    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn {
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 13.5px;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(26,115,232,0.3); }
+    body { background: #f8fafc; color: #334155; padding: 30px 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header-card { background: #fff; padding: 28px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+    p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+    .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13.5px; outline: none; }
+    .form-group input:focus { border-color: var(--primary); }
+    .btn-bar { display: flex; gap: 12px; }
+    .btn { padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #1557b0; }
     .btn-secondary { background: #e2e8f0; color: var(--dark); }
     .btn-secondary:hover { background: #cbd5e1; }
-
-    .stands-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 24px;
-      justify-content: center;
-    }
-
-    .stand-wrapper {
-      position: relative;
-      border-radius: 24px;
-      padding: 24px 18px;
-      background: radial-gradient(circle at 10% 20%, rgba(66, 133, 244, 0.25) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 10%, rgba(234, 67, 53, 0.25) 0%, transparent 40%),
-                  radial-gradient(circle at 10% 90%, rgba(52, 168, 83, 0.25) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 90%, rgba(251, 188, 4, 0.25) 0%, transparent 40%),
-                  #ffffff;
-      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.04);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      page-break-inside: avoid;
-    }
-
-    .stand-card {
-      width: 100%;
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 20px 16px;
-      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
-      text-align: center;
-      position: relative;
-    }
-
-    .stand-title {
-      font-size: 16px;
-      font-weight: 900;
-      color: #0f172a;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .qr-box-container {
-      position: relative;
-      display: inline-flex;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .corner-bracket {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      pointer-events: none;
-    }
-
-    .corner-tl {
-      top: 0;
-      left: 0;
-      border-top: 5px solid var(--google-red);
-      border-left: 5px solid var(--google-red);
-      border-top-left-radius: 6px;
-    }
-    .corner-tl::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-top: 2px solid var(--google-red);
-      border-left: 2px solid var(--google-red);
-    }
-
-    .corner-tr {
-      top: 0;
-      right: 0;
-      border-top: 5px solid var(--google-yellow);
-      border-right: 5px solid var(--google-yellow);
-      border-top-right-radius: 6px;
-    }
-    .corner-tr::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      right: 3px;
-      width: 18px;
-      height: 18px;
-      border-top: 2px solid var(--google-yellow);
-      border-right: 2px solid var(--google-yellow);
-    }
-
-    .corner-bl {
-      bottom: 0;
-      left: 0;
-      border-bottom: 5px solid var(--google-green);
-      border-left: 5px solid var(--google-green);
-      border-bottom-left-radius: 6px;
-    }
-    .corner-bl::after {
-      content: '';
-      position: absolute;
-      bottom: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-bottom: 2px solid var(--google-green);
-      border-left: 2px solid var(--google-green);
-    }
-
-    .corner-br {
-      bottom: 0;
-      right: 0;
-      border-bottom: 5px solid var(--google-blue);
-      border-right: 5px solid var(--google-blue);
-      border-bottom-right-radius: 6px;
-    }
-    .corner-br::after {
-      content: '';
-      position: absolute;
-      bottom: 3px;
-      right: 3px;
-      width: 18px;
-      height: 18px;
-      border-bottom: 2px solid var(--google-blue);
-      border-right: 2px solid var(--google-blue);
-    }
-
-    .qr-canvas-holder {
-      background: #ffffff;
-      padding: 6px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .qr-canvas-holder img, .qr-canvas-holder canvas {
-      display: block;
-      width: 140px !important;
-      height: 140px !important;
-    }
-
-    .stand-stars {
-      color: var(--google-yellow);
-      font-size: 20px;
-      letter-spacing: 3px;
-      margin-bottom: 6px;
-    }
-
-    .nfc-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      font-size: 13px;
-      font-weight: 800;
-      color: #1e293b;
-      letter-spacing: 0.5px;
-    }
-
-    .stand-footer {
-      margin-top: 14px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-    }
-
-    .tag-subtext {
-      margin-top: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #94a3b8;
-      font-family: monospace;
-    }
-
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; }
+    .stand-header { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+    .stand-stars { color: var(--google-yellow); font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
+    .qr-frame { background: #fff; display: inline-flex; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+    .tag-badge { display: inline-block; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #475569; font-family: monospace; margin-bottom: 6px; }
+    .nfc-hint { font-size: 11px; font-weight: 600; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 4px; }
     @media print {
       body { background: #fff; padding: 0; }
-      .control-panel { display: none !important; }
-      .stands-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        padding: 10px;
-      }
-      .stand-wrapper {
-        border: 1px dashed #cbd5e1;
-        box-shadow: none;
-        padding: 14px 10px;
-      }
+      .header-card, .btn-bar { display: none !important; }
+      .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+      .stand-card { border: 1px dashed #94a3b8; box-shadow: none; }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <div class="control-panel">
-      <h1>\u2B50 Batch QR Stand Generator (Google 4-Color Style)</h1>
-      <p class="subtitle">Generate otomatis desain stand akrilik ulasan bintang 5 Google siap cetak / download.</p>
-
-      <div class="grid-inputs">
+    <div class="header-card">
+      <h1>\u{1F5A8}\uFE0F Batch QR Code & NFC Generator</h1>
+      <p class="subtitle">Generate Tag ID unik dan QR Code siap cetak untuk kartu/stand akrilik Google Review Anda.</p>
+      <div class="controls-grid">
         <div class="form-group">
           <label>Mode Cetak</label>
-          <select id="modeSelect" onchange="handleModeChange()">
-            <option value="single">\u{1F3AF} 1 QR Sama (Paket Meja Kafe / 1 Toko)</option>
-            <option value="batch">\u{1F522} ID Berurutan (Stiker Beda ID untuk Klien Berbeda)</option>
+          <select id="modeSelect" onchange="toggleMode()">
+            <option value="single">\u{1F3AF} 1 QR Sama (Cetak Banyak untuk Meja/Cabang yang Sama)</option>
+            <option value="batch">\u{1F522} ID Berurutan (Tiap Stiker Beda ID untuk Klien Berbeda)</option>
           </select>
         </div>
-
         <div class="form-group">
-          <label>Domain / Link Worker</label>
-          <input type="text" id="domainInput" value="" placeholder="https://qr-review-business.vercel.app" />
+          <label>Domain / URL Worker Anda</label>
+          <input type="text" id="domainInput" value="" placeholder="https://domain-anda.com" />
         </div>
-
         <div class="form-group" id="tagIdGroup">
           <label>ID Kartu / QR</label>
-          <input type="text" id="singleTagId" value="REV-CIMAHI-01" placeholder="REV-001" />
+          <input type="text" id="singleTagId" value="REV-TOKO-01" placeholder="REV-TOKO-01" />
         </div>
-
         <div class="form-group" id="prefixGroup" style="display: none;">
           <label>Prefix ID Kartu</label>
-          <input type="text" id="prefixInput" value="REV" placeholder="REV" />
+          <input type="text" id="prefixInput" value="REV" placeholder="REV / CARD / STAND" />
         </div>
-
         <div class="form-group" id="startNumGroup" style="display: none;">
           <label>Nomor Mulai</label>
           <input type="number" id="startNum" value="101" min="1" />
         </div>
-
         <div class="form-group">
-          <label>Judul Atas Stand</label>
-          <input type="text" id="headerText" value="REVIEW HERE" placeholder="REVIEW HERE / ULAS KAMI" />
-        </div>
-
-        <div class="form-group">
-          <label>Teks Footer / Brand</label>
-          <input type="text" id="footerText" value="Powered by Codengine" placeholder="Powered by NamaBrand" />
-        </div>
-
-        <div class="form-group">
-          <label>Jumlah Stand Dicetak</label>
-          <input type="number" id="qtyInput" value="6" min="1" max="60" />
+          <label>Jumlah Stiker Dicetak</label>
+          <input type="number" id="qtyInput" value="10" min="1" max="100" />
         </div>
       </div>
-
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="generateStands()">\u26A1 Generate Stand Preview</button>
-        <button class="btn btn-secondary" onclick="window.print()">\u{1F5A8}\uFE0F Cetak Lembar A4 (Print)</button>
+      <div class="btn-bar">
+        <button class="btn btn-primary" onclick="generateBatch()">\u26A1 Generate QR Codes</button>
+        <button class="btn btn-secondary" onclick="window.print()">\u{1F5A8}\uFE0F Cetak / Print Lembar (A4)</button>
       </div>
     </div>
-
-    <div class="stands-grid" id="standsContainer"></div>
+    <div class="cards-grid" id="cardsContainer"></div>
   </div>
-
   <script>
-    document.getElementById('domainInput').value = window.location.origin;
-
-    function handleModeChange() {
-      var isSingle = document.getElementById('modeSelect').value === 'single';
+    function toggleMode() {
+      const mode = document.getElementById('modeSelect').value;
+      const isSingle = mode === 'single';
       document.getElementById('tagIdGroup').style.display = isSingle ? 'block' : 'none';
       document.getElementById('prefixGroup').style.display = isSingle ? 'none' : 'block';
       document.getElementById('startNumGroup').style.display = isSingle ? 'none' : 'block';
     }
 
-    function generateStands() {
-      var container = document.getElementById('standsContainer');
+    function generateBatch() {
+      const container = document.getElementById('cardsContainer');
       container.innerHTML = '';
-
-      var domain = document.getElementById('domainInput').value.trim().replace(//+$/, '');
-      var mode = document.getElementById('modeSelect').value;
-      var headerText = document.getElementById('headerText').value.trim() || 'REVIEW HERE';
-      var footerText = document.getElementById('footerText').value.trim() || 'Powered by Codengine';
-      var qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-
-      var tagList = [];
-
-      if (mode === 'single') {
-        var tag = document.getElementById('singleTagId').value.trim() || 'REV-001';
-        for (var i = 0; i < qty; i++) {
-          tagList.push(tag);
-        }
-      } else {
-        var prefix = document.getElementById('prefixInput').value.trim() || 'REV';
-        var start = parseInt(document.getElementById('startNum').value, 10) || 101;
-        for (var j = 0; j < qty; j++) {
-          tagList.push(prefix + '-' + (start + j));
-        }
+      let domain = document.getElementById('domainInput').value.trim() || window.location.origin;
+      if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+        domain = 'https://' + domain;
       }
+      domain = domain.replace(/\\/+$/, '');
 
-      tagList.forEach(function(tagId, idx) {
-        var targetUrl = domain + '/t/' + tagId;
+      const mode = document.getElementById('modeSelect').value;
+      const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
 
-        var wrapper = document.createElement('div');
-        wrapper.className = 'stand-wrapper';
+      for (let i = 0; i < qty; i++) {
+        let tagId = '';
+        if (mode === 'single') {
+          tagId = document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01';
+        } else {
+          const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
+          const start = parseInt(document.getElementById('startNum').value, 10) || 1;
+          tagId = prefix + '-' + (start + i);
+        }
 
-        var card = document.createElement('div');
+        const targetUrl = domain + '/t/' + tagId;
+        const card = document.createElement('div');
         card.className = 'stand-card';
+        card.innerHTML = '<div class="stand-header">Ulas Kami di Google</div>' +
+          '<div class="stand-stars">\u2605\u2605\u2605\u2605\u2605</div>' +
+          '<div class="qr-frame" id="qr-' + tagId + '-' + i + '"></div>' +
+          '<div><div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(Stiker #' + (i + 1) + ')' : '') + '</div>' +
+          '<div class="nfc-hint">\u{1F4F2} Tap NFC atau Scan QR</div></div>';
+        container.appendChild(card);
 
-        var title = document.createElement('div');
-        title.className = 'stand-title';
-        title.textContent = headerText;
-        card.appendChild(title);
-
-        var qrBox = document.createElement('div');
-        qrBox.className = 'qr-box-container';
-
-        var cTL = document.createElement('div'); cTL.className = 'corner-bracket corner-tl';
-        var cTR = document.createElement('div'); cTR.className = 'corner-bracket corner-tr';
-        var cBL = document.createElement('div'); cBL.className = 'corner-bracket corner-bl';
-        var cBR = document.createElement('div'); cBR.className = 'corner-bracket corner-br';
-
-        qrBox.appendChild(cTL);
-        qrBox.appendChild(cTR);
-        qrBox.appendChild(cBL);
-        qrBox.appendChild(cBR);
-
-        var qrHolder = document.createElement('div');
-        qrHolder.className = 'qr-canvas-holder';
-        qrHolder.id = 'qr-' + idx;
-        qrBox.appendChild(qrHolder);
-
-        card.appendChild(qrBox);
-
-        var stars = document.createElement('div');
-        stars.className = 'stand-stars';
-        stars.textContent = '\u2605\u2605\u2605\u2605\u2605';
-        card.appendChild(stars);
-
-        var nfc = document.createElement('div');
-        nfc.className = 'nfc-badge';
-        nfc.innerHTML = '((((&nbsp;<b>NFC</b>&nbsp;))))';
-        card.appendChild(nfc);
-
-        wrapper.appendChild(card);
-
-        var footer = document.createElement('div');
-        footer.className = 'stand-footer';
-        footer.textContent = footerText;
-        wrapper.appendChild(footer);
-
-        var idSub = document.createElement('div');
-        idSub.className = 'tag-subtext';
-        idSub.textContent = 'ID: ' + tagId;
-        wrapper.appendChild(idSub);
-
-        container.appendChild(wrapper);
-
-        new QRCode(qrHolder, {
+        new QRCode(document.getElementById('qr-' + tagId + '-' + i), {
           text: targetUrl,
           width: 140,
           height: 140,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
+          colorDark: '#0f172a',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
         });
-      });
+      }
     }
 
-    window.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('domainInput').value = window.location.origin;
-      generateStands();
+      generateBatch();
     });
   <\/script>
 </body>
