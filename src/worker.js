@@ -39,15 +39,24 @@ const SETUP_HTML = `<!DOCTYPE html>
     h1 { font-size: 22px; font-weight: 800; color: var(--dark); line-height: 1.3; margin-bottom: 6px; }
     p.subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
 
-    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-group { margin-bottom: 18px; text-align: left; position: relative; }
     label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
     input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 14px; color: var(--dark); background: #fcfdfe; transition: all 0.2s ease; outline: none; }
     input[type="text"]:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
 
-    .helper-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
-    .helper-box b { color: var(--dark); }
-    .btn-find-placeid { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 12px; background: #fff; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); font-size: 12px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
-    .btn-find-placeid:hover { background: var(--primary-light); }
+    .auto-status {
+      display: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 6px;
+      align-items: center;
+      gap: 6px;
+    }
+    .auto-status.active {
+      display: flex;
+    }
+
     .preview-box { display: none; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; text-align: left; }
     .preview-box.active { display: block; }
     .preview-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px; }
@@ -72,31 +81,23 @@ const SETUP_HTML = `<!DOCTYPE html>
       </div>
       <div class="google-stars">★★★★★</div>
       <h1>Aktivasi Stand Google Review</h1>
-      <p class="subtitle">Hubungkan kartu ini agar customer langsung melihat pop-up ulasan rating 5 bintang resmi Google.</p>
+      <p class="subtitle">Paste link Google Maps toko Anda, sistem otomatis mengambil Place ID dan menguncinya ke form bintang 5.</p>
     </div>
 
     <div id="statusMsg" class="status-msg"></div>
 
     <form id="setupForm">
       <div class="form-group">
-        <label for="businessName">1. Nama Toko / Bisnis</label>
-        <input type="text" id="businessName" placeholder="Contoh: Alun alun cimahi" required autocomplete="off" />
+        <label for="mapsLinkInput">📍 Link Google Maps Toko / Place ID</label>
+        <input type="text" id="mapsLinkInput" placeholder="Paste link maps.app.goo.gl/... atau Place ID" required autocomplete="off" />
+        <div class="auto-status" id="autoStatus">
+          <span>⏳</span> Mendeteksi Place ID & Nama Toko secara otomatis...
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="placeIdInput">2. Google Place ID / Link Review Resmi</label>
-        <input type="text" id="placeIdInput" placeholder="ChIJ... atau link g.page/r/.../review" required autocomplete="off" />
-      </div>
-
-      <div class="helper-box">
-        <b>💡 2 Cara Cepat Mendapatkan Place ID Toko:</b>
-        <div style="margin-top: 6px;">
-          1. <b>Dari Google Bisnisku</b>: Buka Google &rarr; klik tombol <b>"Minta Ulasan"</b> &rarr; salin linknya.<br>
-          2. <b>Dari Pencari Place ID Google Resmi</b>: Ketik nama toko Anda di web pencari resmi Google, lalu salin kodenya.
-        </div>
-        <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" class="btn-find-placeid">
-          🔍 Buka Pencari Place ID Google (Gratis)
-        </a>
+        <label for="businessName">🏬 Nama Toko / Bisnis (Otomatis)</label>
+        <input type="text" id="businessName" placeholder="Akan terisi otomatis setelah paste link" required autocomplete="off" />
       </div>
 
       <div class="preview-box" id="previewBox">
@@ -120,62 +121,81 @@ const SETUP_HTML = `<!DOCTYPE html>
   <script>
     const TAG_ID = "{{TAG_ID}}";
     const setupForm = document.getElementById('setupForm');
+    const mapsLinkInput = document.getElementById('mapsLinkInput');
     const nameInput = document.getElementById('businessName');
-    const inputField = document.getElementById('placeIdInput');
     const previewBox = document.getElementById('previewBox');
     const previewUrlText = document.getElementById('previewUrlText');
     const btnTestLink = document.getElementById('btnTestLink');
     const btnSubmit = document.getElementById('btnSubmit');
+    const autoStatus = document.getElementById('autoStatus');
     const statusMsg = document.getElementById('statusMsg');
 
+    let resolvedPlaceId = '';
     let finalDirectUrl = '';
 
-    function computeReviewUrl() {
-      const raw = inputField.value.trim();
+    let resolveTimer = null;
+    mapsLinkInput.addEventListener('input', () => {
+      clearTimeout(resolveTimer);
+      const raw = mapsLinkInput.value.trim();
       if (!raw) {
         previewBox.classList.remove('active');
-        finalDirectUrl = '';
+        autoStatus.classList.remove('active');
         return;
       }
 
-      const placeMatch = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
-      if (placeMatch) {
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + placeMatch[0];
-      } else if (raw.includes('search.google.com/local/writereview')) {
-        finalDirectUrl = raw;
-      } else if (raw.includes('g.page/')) {
-        finalDirectUrl = raw.startsWith('http') ? raw : 'https://' + raw;
-      } else {
-        const firstLine = raw.split('\\n')[0].trim();
-        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(firstLine);
+      const match = raw.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+      if (match) {
+        resolvedPlaceId = match[0];
+        finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + resolvedPlaceId;
+        previewUrlText.textContent = finalDirectUrl;
+        btnTestLink.href = finalDirectUrl;
+        previewBox.classList.add('active');
+        autoStatus.classList.remove('active');
+        if (!nameInput.value.trim()) nameInput.value = 'Toko Anda';
+        return;
       }
 
-      previewUrlText.textContent = finalDirectUrl;
-      btnTestLink.href = finalDirectUrl;
-      previewBox.classList.add('active');
-    }
-
-    inputField.addEventListener('input', computeReviewUrl);
+      if (raw.includes('maps.app.goo.gl') || raw.includes('goo.gl/maps') || raw.includes('google.com/maps')) {
+        autoStatus.classList.add('active');
+        resolveTimer = setTimeout(async () => {
+          try {
+            const res = await fetch('/api/resolve-maps', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: raw })
+            });
+            const data = await res.json();
+            if (data.success && data.placeId) {
+              resolvedPlaceId = data.placeId;
+              if (data.businessName && !nameInput.value.trim()) {
+                nameInput.value = data.businessName;
+              }
+              finalDirectUrl = 'https://search.google.com/local/writereview?placeid=' + data.placeId;
+              previewUrlText.textContent = finalDirectUrl;
+              btnTestLink.href = finalDirectUrl;
+              previewBox.classList.add('active');
+            }
+          } catch (e) {
+            console.warn('Auto resolve error:', e);
+          } finally {
+            autoStatus.classList.remove('active');
+          }
+        }, 300);
+      }
+    });
 
     setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       statusMsg.className = 'status-msg';
       statusMsg.style.display = 'none';
 
-      const name = nameInput.value.trim();
-      const placeIdVal = inputField.value.trim();
+      const name = nameInput.value.trim() || 'Toko Anda';
+      const inputVal = mapsLinkInput.value.trim();
 
-      if (!name) {
+      if (!inputVal) {
         statusMsg.className = 'status-msg error';
-        statusMsg.textContent = 'Mohon isi nama toko Anda.';
-        nameInput.focus();
-        return;
-      }
-
-      if (!placeIdVal) {
-        statusMsg.className = 'status-msg error';
-        statusMsg.textContent = 'Mohon isi Place ID atau Link Ulasan resmi toko Anda.';
-        inputField.focus();
+        statusMsg.textContent = 'Mohon paste link Google Maps toko Anda.';
+        mapsLinkInput.focus();
         return;
       }
 
@@ -186,7 +206,7 @@ const SETUP_HTML = `<!DOCTYPE html>
         const payload = {
           tagId: TAG_ID,
           businessName: name,
-          reviewUrl: placeIdVal
+          reviewUrl: resolvedPlaceId || inputVal
         };
 
         const res = await fetch('/api/claim', {
@@ -437,37 +457,53 @@ export default {
       });
     }
 
-    // 2. Place Search Autocomplete API: GET /api/places/search?q=...
-    if (path === '/api/places/search') {
-      const q = url.searchParams.get('q') || '';
-      if (!q || q.length < 2) {
-        return Response.json({ results: [] });
-      }
-
+    // 2. Auto Resolve Google Maps URL: POST /api/resolve-maps
+    if (path === '/api/resolve-maps' && request.method === 'POST') {
       try {
-        // Query Photon OSM search proxy for fast global & Indonesian POIs
-        const searchUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
-        const res = await fetch(searchUrl, {
-          headers: { 'User-Agent': 'QRReviewPlatform/1.0' }
-        });
-        const data = await res.json();
+        const { url: rawMapsUrl } = await request.json();
+        if (!rawMapsUrl) {
+          return Response.json({ success: false, error: 'URL kosong' }, { status: 400 });
+        }
 
-        const results = (data.features || []).map(f => {
-          const p = f.properties || {};
-          const name = p.name || q;
-          const parts = [p.street, p.district, p.city || p.county, p.state, p.country].filter(Boolean);
-          const address = parts.join(', ');
-          const queryParam = encodeURIComponent(`${name} ${address}`);
-          return {
-            name,
-            address,
-            directReviewUrl: `https://www.google.com/maps/search/?api=1&query=${queryParam}`
-          };
+        const cleanInput = rawMapsUrl.trim();
+        const res = await fetch(cleanInput, {
+          redirect: 'follow',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          }
         });
 
-        return Response.json({ results });
+        const finalUrl = res.url;
+        const text = await res.text();
+
+        const placeIdMatch = text.match(/ChIJ[a-zA-Z0-9_-]{20,}/) || finalUrl.match(/ChIJ[a-zA-Z0-9_-]{20,}/);
+        const ftidMatch = finalUrl.match(/ftid=([0-9a-fx:]+)/i);
+
+        let name = '';
+        const titleMatch = text.match(/<title>([^<]+) - Google Maps<\/title>/i);
+        if (titleMatch) {
+          name = titleMatch[1].replace(/^[0-9A-Z+]+\s+/, '').trim();
+        } else {
+          const qMatch = finalUrl.match(/q=([^&]+)/);
+          if (qMatch) {
+            name = decodeURIComponent(qMatch[1].replace(/\+/g, ' ')).split(',')[0].replace(/^[0-9A-Z+]+\s+/, '').trim();
+          }
+        }
+
+        const placeId = placeIdMatch ? placeIdMatch[0] : (ftidMatch ? ftidMatch[1] : null);
+
+        if (!placeId) {
+          return Response.json({ success: false, error: 'Tidak dapat mendeteksi Place ID' }, { status: 404 });
+        }
+
+        return Response.json({
+          success: true,
+          placeId,
+          businessName: name || 'Toko Anda',
+          directReviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`
+        });
       } catch (err) {
-        return Response.json({ results: [] });
+        return Response.json({ success: false, error: err.message }, { status: 500 });
       }
     }
 

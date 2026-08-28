@@ -34,6 +34,17 @@ const mockEnv = {
   }
 };
 
+// 5. Test /api/resolve-maps endpoint
+const resolveReq = new Request('https://domain.com/api/resolve-maps', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ url: 'https://maps.app.goo.gl/69zEMuGdeQyRCTG5A?g_st=ic' })
+});
+const resolveRes = await worker.fetch(resolveReq, mockEnv);
+const resolveData = await resolveRes.json();
+console.assert(resolveData.success && resolveData.placeId, 'Resolve maps failed');
+console.log('✅ Auto-resolve Google Maps link endpoint passed:', resolveData.businessName, '->', resolveData.placeId);
+
 async function testWorkerFlow() {
   // A. First visit - should return Setup HTML
   const req1 = new Request('https://domain.com/t/TEST-100');
