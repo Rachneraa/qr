@@ -18,18 +18,19 @@
       --google-red: #ea4335;
       --google-green: #34a853;
       --google-blue: #4285f4;
+      --success: #16a34a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background: #f8fafc; color: #334155; padding: 30px 20px; }
-    .container { max-width: 1050px; margin: 0 auto; }
+    .container { max-width: 1100px; margin: 0 auto; }
     .header-card { background: #fff; padding: 28px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
     h1 { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
     p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; }
     .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
     .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
     .form-group input, .form-group select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13.5px; outline: none; }
-    .form-group input:focus { border-color: var(--primary); }
-    .btn-bar { display: flex; flex-wrap: wrap; gap: 10px; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    .btn-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .btn { padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #1557b0; }
@@ -37,13 +38,23 @@
     .btn-success:hover { background: #15803d; }
     .btn-secondary { background: #e2e8f0; color: var(--dark); }
     .btn-secondary:hover { background: #cbd5e1; }
+    .btn-reset { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+    .btn-reset:hover { background: #fee2e2; }
     
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; }
+    /* Progress Bar Box */
+    .progress-box { margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px; }
+    .progress-info { font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .progress-bar-container { flex: 1; max-width: 320px; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 0 16px; }
+    .progress-bar-fill { height: 100%; background: #16a34a; width: 0%; transition: width 0.3s ease; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+    .stand-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; page-break-inside: avoid; transition: transform 0.15s, border-color 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+    .stand-card.card-done { border-color: #86efac; background: #f0fdf4; }
+    
     .stand-header { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; color: #0f172a; margin-bottom: 12px; text-transform: uppercase; }
     
     /* Google 4-Corner Accent Frame */
-    .qr-wrapper { position: relative; display: inline-block; padding: 14px; margin-bottom: 10px; }
+    .qr-wrapper { position: relative; display: inline-block; padding: 14px; margin: 0 auto 10px auto; }
     .corner { position: absolute; width: 22px; height: 22px; }
     .corner-tl { top: 0; left: 0; border-top: 4px solid var(--google-red); border-left: 4px solid var(--google-red); border-top-left-radius: 6px; }
     .corner-tr { top: 0; right: 0; border-top: 4px solid var(--google-yellow); border-right: 4px solid var(--google-yellow); border-top-right-radius: 6px; }
@@ -54,13 +65,28 @@
     .stand-stars { color: var(--google-yellow); font-size: 20px; margin-bottom: 6px; letter-spacing: 2px; }
     .nfc-text { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: 1px; }
     .tag-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 700; color: #64748b; font-family: monospace; }
-    .brand-footer { font-size: 10px; color: #94a3b8; margin-top: 6px; }
+    .brand-footer { font-size: 10px; color: #94a3b8; margin-top: 6px; margin-bottom: 12px; }
+
+    /* Card Action & Status Area */
+    .card-actions { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+    .btn-copy-nfc { width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+    .btn-copy-nfc:hover { background: #2563eb; color: #fff; }
+    .btn-copy-nfc.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-top: 6px; cursor: pointer; user-select: none; }
+    .status-badge.pending { color: #94a3b8; }
+    .status-badge.done { color: #16a34a; }
+
+    /* Toast notification */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
 
     @media print {
       body { background: #fff; padding: 0; }
-      .header-card, .btn-bar { display: none !important; }
+      .header-card, .btn-bar, .card-actions, #toast, .progress-box { display: none !important; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
-      .stand-card { border: 1px dashed #94a3b8; box-shadow: none; }
+      .stand-card { border: 1px dashed #94a3b8; box-shadow: none; background: #fff !important; }
+      .brand-footer { margin-bottom: 0; }
     }
   </style>
 </head>
@@ -68,49 +94,111 @@
   <div class="container">
     <div class="header-card">
       <h1>🖨️ Generator QR Code & Export Canva</h1>
-      <p class="subtitle">Generate stand akrilik Google Review atau export file CSV untuk Canva Bulk Create.</p>
+      <p class="subtitle">Generate stand akrilik Google Review, copy link untuk NFC, atau export CSV untuk Canva Bulk Create.</p>
       
       <div class="controls-grid">
         <div class="form-group">
           <label>Mode Cetak</label>
-          <select id="modeSelect" onchange="toggleMode()">
+          <select id="modeSelect" onchange="onInputChange()">
             <option value="single">🎯 1 QR Sama (Cetak Banyak untuk 1 Toko / Banyak Meja)</option>
             <option value="batch">🔢 ID Berurutan (Tiap Stiker Beda ID untuk Klien Berbeda)</option>
           </select>
         </div>
         <div class="form-group">
           <label>Domain Server Worker Anda</label>
-          <input type="text" id="domainInput" value="" placeholder="https://qr-review-business.vercel.app" />
+          <input type="text" id="domainInput" value="" placeholder="https://qr-review-business.vercel.app" oninput="onInputChange()" />
         </div>
         <div class="form-group" id="tagIdGroup">
           <label>ID Kartu / QR</label>
-          <input type="text" id="singleTagId" value="REV-TOKO-01" placeholder="REV-TOKO-01" />
+          <input type="text" id="singleTagId" value="REV-TOKO-01" placeholder="REV-TOKO-01" oninput="onInputChange()" />
         </div>
         <div class="form-group" id="prefixGroup" style="display: none;">
           <label>Prefix ID Kartu</label>
-          <input type="text" id="prefixInput" value="REV" placeholder="REV / CARD / STAND" />
+          <input type="text" id="prefixInput" value="REV" placeholder="REV / CARD / STAND" oninput="onInputChange()" />
         </div>
         <div class="form-group" id="startNumGroup" style="display: none;">
           <label>Nomor Mulai</label>
-          <input type="number" id="startNum" value="101" min="1" />
+          <input type="number" id="startNum" value="101" min="1" oninput="onInputChange()" />
         </div>
         <div class="form-group">
           <label>Jumlah Stiker Dicetak / Diexport</label>
-          <input type="number" id="qtyInput" value="10" min="1" max="500" />
+          <input type="number" id="qtyInput" value="10" min="1" max="500" oninput="onInputChange()" />
         </div>
       </div>
       
       <div class="btn-bar">
-        <button class="btn btn-primary" onclick="generateBatch()">⚡ Generate QR Preview</button>
+        <button class="btn btn-primary" onclick="generateBatch(true)">⚡ Refresh QR Preview</button>
         <button class="btn btn-success" onclick="downloadCsvForCanva()">📥 Download CSV untuk Canva</button>
         <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Lembar A4 Langsung</button>
+      </div>
+
+      <div class="progress-box" id="progressBox">
+        <div class="progress-info">
+          <span>🔥 Progress Burning NFC:</span>
+          <span id="progressText" style="color: #16a34a;">0 / 10 Selesai</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+        <button class="btn-reset" onclick="resetDoneProgress()">🔄 Reset Checklist</button>
       </div>
     </div>
     
     <div class="cards-grid" id="cardsContainer"></div>
   </div>
 
+  <div id="toast">Link berhasil disalin!</div>
+
   <script>
+    const STORAGE_KEY_FORM = 'qr_review_form_state';
+    const STORAGE_KEY_DONE = 'qr_review_done_tags';
+
+    function saveFormState() {
+      const state = {
+        mode: document.getElementById('modeSelect').value,
+        domain: document.getElementById('domainInput').value,
+        singleTagId: document.getElementById('singleTagId').value,
+        prefix: document.getElementById('prefixInput').value,
+        startNum: document.getElementById('startNum').value,
+        qty: document.getElementById('qtyInput').value
+      };
+      localStorage.setItem(STORAGE_KEY_FORM, JSON.stringify(state));
+    }
+
+    function loadFormState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_FORM);
+        if (saved) {
+          const state = JSON.parse(saved);
+          if (state.mode) document.getElementById('modeSelect').value = state.mode;
+          if (state.domain) document.getElementById('domainInput').value = state.domain;
+          if (state.singleTagId) document.getElementById('singleTagId').value = state.singleTagId;
+          if (state.prefix) document.getElementById('prefixInput').value = state.prefix;
+          if (state.startNum) document.getElementById('startNum').value = state.startNum;
+          if (state.qty) document.getElementById('qtyInput').value = state.qty;
+        }
+      } catch (e) {}
+    }
+
+    function getDoneMap() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_DONE);
+        return saved ? JSON.parse(saved) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveDoneMap(map) {
+      localStorage.setItem(STORAGE_KEY_DONE, JSON.stringify(map));
+    }
+
+    function onInputChange() {
+      toggleMode();
+      saveFormState();
+      generateBatch(false);
+    }
+
     function toggleMode() {
       const mode = document.getElementById('modeSelect').value;
       const isSingle = mode === 'single';
@@ -119,7 +207,94 @@
       document.getElementById('startNumGroup').style.display = isSingle ? 'none' : 'block';
     }
 
-    function generateBatch() {
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+      }, 2500);
+    }
+
+    function copyNfcLink(tagId, targetUrl, cardIndex) {
+      navigator.clipboard.writeText(targetUrl).then(() => {
+        showToast('📋 Link ' + tagId + ' disalin! Siap di-write ke NFC.');
+        toggleDoneStatus(tagId, true, cardIndex);
+      }).catch(() => {
+        // Fallback for older browsers
+        const temp = document.createElement('input');
+        temp.value = targetUrl;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast('📋 Link ' + tagId + ' disalin!');
+        toggleDoneStatus(tagId, true, cardIndex);
+      });
+    }
+
+    function toggleDoneStatus(tagId, forceValue, cardIndex) {
+      const doneMap = getDoneMap();
+      const current = !!doneMap[tagId];
+      const newVal = forceValue !== undefined ? forceValue : !current;
+      doneMap[tagId] = newVal;
+      saveDoneMap(doneMap);
+
+      const card = document.getElementById('card-' + cardIndex);
+      const btn = document.getElementById('btn-copy-' + cardIndex);
+      const badge = document.getElementById('badge-' + cardIndex);
+
+      if (card && btn && badge) {
+        if (newVal) {
+          card.classList.add('card-done');
+          btn.classList.add('copied');
+          btn.innerHTML = '✓ Link Tersalin';
+          badge.className = 'status-badge done';
+          badge.innerHTML = '● Siap / Selesai';
+        } else {
+          card.classList.remove('card-done');
+          btn.classList.remove('copied');
+          btn.innerHTML = '📋 Copy Link for NFC';
+          badge.className = 'status-badge pending';
+          badge.innerHTML = '○ Belum di-write';
+        }
+      }
+      updateProgressBar();
+    }
+
+    function resetDoneProgress() {
+      if (confirm('Reset status checklist untuk semua kartu?')) {
+        saveDoneMap({});
+        generateBatch(false);
+        showToast('Checklist direset.');
+      }
+    }
+
+    function updateProgressBar() {
+      const doneMap = getDoneMap();
+      const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+      const mode = document.getElementById('modeSelect').value;
+      let doneCount = 0;
+
+      for (let i = 0; i < qty; i++) {
+        let tagId = '';
+        if (mode === 'single') {
+          tagId = (document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01') + '-' + (i + 1);
+        } else {
+          const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
+          const start = parseInt(document.getElementById('startNum').value, 10) || 1;
+          tagId = prefix + '-' + (start + i);
+        }
+        if (doneMap[tagId]) doneCount++;
+      }
+
+      const percent = Math.min(100, Math.round((doneCount / qty) * 100));
+      document.getElementById('progressText').innerText = doneCount + ' / ' + qty + ' Selesai (' + percent + '%)';
+      document.getElementById('progressBarFill').style.width = percent + '%';
+    }
+
+    function generateBatch(showNotice) {
+      saveFormState();
       const container = document.getElementById('cardsContainer');
       container.innerHTML = '';
       let domain = document.getElementById('domainInput').value.trim() || window.location.origin;
@@ -130,33 +305,51 @@
 
       const mode = document.getElementById('modeSelect').value;
       const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+      const doneMap = getDoneMap();
 
       for (let i = 0; i < qty; i++) {
         let tagId = '';
+        let trackingKey = '';
         if (mode === 'single') {
           tagId = document.getElementById('singleTagId').value.trim() || 'REV-TOKO-01';
+          trackingKey = tagId + '-' + (i + 1);
         } else {
           const prefix = document.getElementById('prefixInput').value.trim() || 'REV';
           const start = parseInt(document.getElementById('startNum').value, 10) || 1;
           tagId = prefix + '-' + (start + i);
+          trackingKey = tagId;
         }
 
+        const isDone = !!doneMap[trackingKey];
         const targetUrl = domain + '/t/' + tagId;
         const card = document.createElement('div');
-        card.className = 'stand-card';
+        card.className = 'stand-card ' + (isDone ? 'card-done' : '');
+        card.id = 'card-' + i;
+        
         card.innerHTML = 
-          '<div class="stand-header">REVIEW HERE</div>' +
-          '<div class="qr-wrapper">' +
-            '<div class="corner corner-tl"></div>' +
-            '<div class="corner corner-tr"></div>' +
-            '<div class="corner corner-bl"></div>' +
-            '<div class="corner corner-br"></div>' +
-            '<div class="qr-box" id="qr-' + tagId + '-' + i + '"></div>' +
+          '<div>' +
+            '<div class="stand-header">REVIEW HERE</div>' +
+            '<div class="qr-wrapper">' +
+              '<div class="corner corner-tl"></div>' +
+              '<div class="corner corner-tr"></div>' +
+              '<div class="corner corner-bl"></div>' +
+              '<div class="corner corner-br"></div>' +
+              '<div class="qr-box" id="qr-' + tagId + '-' + i + '"></div>' +
+            '</div>' +
+            '<div class="stand-stars">★★★★★</div>' +
+            '<div class="nfc-text">((((NFC))))</div>' +
+            '<div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(#' + (i + 1) + ')' : '') + '</div>' +
+            '<div class="brand-footer">Powered by Codengine</div>' +
           '</div>' +
-          '<div class="stand-stars">★★★★★</div>' +
-          '<div class="nfc-text">((((NFC))))</div>' +
-          '<div class="tag-badge">ID: ' + tagId + ' ' + (mode === 'single' ? '(#' + (i + 1) + ')' : '') + '</div>' +
-          '<div class="brand-footer">Powered by Codengine</div>';
+          '<div class="card-actions">' +
+            '<button type="button" class="btn-copy-nfc ' + (isDone ? 'copied' : '') + '" id="btn-copy-' + i + '" onclick="copyNfcLink(\'' + trackingKey + '\', \'' + targetUrl + '\', ' + i + ')">' +
+              (isDone ? '✓ Link Tersalin' : '📋 Copy Link for NFC') +
+            '</button>' +
+            '<div class="status-badge ' + (isDone ? 'done' : 'pending') + '" id="badge-' + i + '" onclick="toggleDoneStatus(\'' + trackingKey + '\', undefined, ' + i + ')" title="Klik untuk ubah status">' +
+              (isDone ? '● Siap / Selesai' : '○ Belum di-write') +
+            '</div>' +
+          '</div>';
+
         container.appendChild(card);
 
         new QRCode(document.getElementById('qr-' + tagId + '-' + i), {
@@ -168,6 +361,9 @@
           correctLevel: QRCode.CorrectLevel.M
         });
       }
+
+      updateProgressBar();
+      if (showNotice) showToast('QR Code berhasil di-generate!');
     }
 
     function downloadCsvForCanva() {
@@ -206,11 +402,16 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      showToast('File CSV berhasil diunduh!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('domainInput').value = window.location.origin;
-      generateBatch();
+      loadFormState();
+      if (!document.getElementById('domainInput').value) {
+        document.getElementById('domainInput').value = window.location.origin;
+      }
+      toggleMode();
+      generateBatch(false);
     });
   </script>
 </body>
